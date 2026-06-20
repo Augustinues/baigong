@@ -31,7 +31,9 @@
 
 百工可以作为 macOS 原生应用打包使用，双击即可运行，自动打开浏览器控制台。无需终端、无需手动启动服务器。
 
-**下载地址：** [百工 Baigong.dmg](https://github.com/Augustinues/baigong/releases) (首次发布中)
+**下载地址：** ↓
+
+> [⬇️ 下载 Baigong.dmg (38MB)](https://github.com/Augustinues/baigong/releases/download/v0.1.0/Baigong.dmg)
 
 或者从源码自行打包：
 
