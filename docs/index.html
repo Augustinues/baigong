@@ -392,7 +392,8 @@ async function checkUpdate(){
     $('versionInfo').innerHTML=`当前版本: <b>v${r.current}</b> | 最新版: <b>v${r.latest}</b>`;
     if(r.has_update){
       $('btnUpdate').style.display='inline-block';
-      $('updateStatus').textContent=`有新版本可用！\n${(r.body||'').slice(0,200)}`;
+      const modeInfo=r.is_frozen?'(App打包版,下载DMG安装)':'(源码版,git pull)';
+      $('updateStatus').textContent=`有新版本 v${r.latest} 可用！${modeInfo}\n${(r.body||'').slice(0,200)}`;
     }else{
       $('btnUpdate').style.display='none';
       $('updateStatus').textContent=r.error?'⚠️ '+r.error:'✅ 已是最新版本';
@@ -400,13 +401,20 @@ async function checkUpdate(){
   }catch(e){$('updateStatus').textContent='❌ 检查失败: '+e.message}
 }
 async function applyUpdate(){
-  $('btnUpdate').disabled=true;$('updateStatus').textContent='⏳ 正在拉取更新...';
+  $('btnUpdate').disabled=true;$('updateStatus').textContent='⏳ 正在下载更新...';
   try{
     const r=await api('/api/update/apply',{method:'POST'});
     if(r.ok){
-      $('updateStatus').textContent='✅ 更新完成！\n'+r.message;
+      $('updateStatus').textContent=r.message;
       $('btnUpdate').style.display='none';
-      setTimeout(()=>location.reload(),2000);
+      if(r.download_path){
+        // 打包版：显示下载完成，打开下载文件夹
+        const msg='✅ 更新包已下载到：'+r.download_path+'\n请关闭本应用后打开安装';
+        $('updateStatus').textContent=msg;
+      }else{
+        // 源码版：重载页面
+        setTimeout(()=>location.reload(),2000);
+      }
     }else{
       $('updateStatus').textContent='❌ 更新失败: '+r.error;
       $('btnUpdate').disabled=false;

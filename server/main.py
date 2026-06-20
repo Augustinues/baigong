@@ -4,6 +4,8 @@ import asyncio
 import json
 import logging
 import os
+import shutil
+import sys
 import uuid
 from pathlib import Path
 from typing import Optional
@@ -20,7 +22,7 @@ from .real_tools import (
 )
 
 # ── 版本信息 ──
-VERSION = "0.2.0"
+VERSION = "0.2.1"
 GITHUB_REPO = "Augustinues/baigong"
 HERE = Path(__file__).parent.parent
 DOCS = HERE / "docs"
@@ -210,8 +212,18 @@ async def api_task(input: TaskInput):
 async def api_check_update():
     """检查 GitHub 是否有新版本"""
     import httpx as httpx_module
+
+    # 检测运行模式
+    is_frozen = getattr(sys, "frozen", False)
+
+    # 构建代理配置（先检查环境变量再检查配置文件）
+    proxy_url = os.environ.get("ALL_PROXY") or os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY") or ""
+    client_kwargs = {"timeout": 15}
+    if proxy_url:
+        client_kwargs["proxies"] = proxy_url
+
     try:
-        async with httpx_module.AsyncClient(timeout=10) as client:
+        async with httpx_module.AsyncClient(**client_kwargs) as client:
             resp = await client.get(
                 f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
                 headers={"Accept": "application/vnd.github+json"},
@@ -219,24 +231,109 @@ async def api_check_update():
             if resp.status_code == 200:
                 data = resp.json()
                 latest = data.get("tag_name", "").lstrip("v")
+                # 找到下载链接（DMG 资产）
+                download_url = ""
+                for asset in data.get("assets", []):
+                    if asset.get("name", "").lower().endswith(".dmg"):
+                        download_url = asset.get("browser_download_url", "")
+                        break
                 return {
                     "current": VERSION,
                     "latest": latest,
                     "has_update": latest != VERSION,
                     "html_url": data.get("html_url", ""),
-                    "body": (data.get("body") or "")[:300],
+                    "download_url": download_url,
+                    "is_frozen": is_frozen,
+                    "body": (data.get("body") or "")[:500],
                 }
-            return {"current": VERSION, "latest": VERSION, "has_update": False, "error": f"HTTP {resp.status_code}"}
+            # 如果 /latest 失败（比如 token 不足），尝试列出所有 release
+            resp2 = await client.get(
+                f"https://api.github.com/repos/{GITHUB_REPO}/releases?per_page=1",
+                headers={"Accept": "application/vnd.github+json"},
+            )
+            if resp2.status_code == 200:
+                releases = resp2.json()
+                if releases:
+                    data = releases[0]
+                    latest = data.get("tag_name", "").lstrip("v")
+                    download_url = ""
+                    for asset in data.get("assets", []):
+                        if asset.get("name", "").lower().endswith(".dmg"):
+                            download_url = asset.get("browser_download_url", "")
+                            break
+                    return {
+                        "current": VERSION,
+                        "latest": latest,
+                        "has_update": latest != VERSION,
+                        "html_url": data.get("html_url", ""),
+                        "download_url": download_url,
+                        "is_frozen": is_frozen,
+                        "body": (data.get("body") or "")[:500],
+                    }
+            return {"current": VERSION, "latest": VERSION, "has_update": False, "is_frozen": is_frozen, "error": f"GitHub API {resp.status_code}"}
     except Exception as e:
-        return {"current": VERSION, "latest": VERSION, "has_update": False, "error": str(e)[:100]}
+        return {"current": VERSION, "latest": VERSION, "has_update": False, "is_frozen": is_frozen, "error": str(e)[:150]}
 
 
 @app.post("/api/update/apply")
 async def api_apply_update():
-    """从 GitHub 拉取最新代码并重启"""
+    """应用更新：打包版下载 DMG，源码版 git pull"""
     global _current_task
-    import subprocess, sys
+    import subprocess
 
+    is_frozen = getattr(sys, "frozen", False)
+    download_url = ""  # 前端在调用前应先调 check 获取 download_url
+
+    # 构建代理配置
+    proxy_url = os.environ.get("ALL_PROXY") or os.environ.get("HTTPS_PROXY") or os.environ.get("HTTP_PROXY") or ""
+
+    if is_frozen:
+        # ── 打包版：从 GitHub 下载最新 DMG ──
+        # 先获取 download_url
+        import httpx as httpx_module
+        client_kwargs = {"timeout": 15}
+        if proxy_url:
+            client_kwargs["proxies"] = proxy_url
+        download_path = os.path.expanduser("~/Downloads/Baigong.dmg")
+        try:
+            async with httpx_module.AsyncClient(**client_kwargs) as client:
+                # 获取最新 release 信息
+                resp = await client.get(
+                    f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
+                    headers={"Accept": "application/vnd.github+json"},
+                )
+                if resp.status_code != 200:
+                    return {"ok": False, "error": f"无法获取版本信息 (HTTP {resp.status_code})"}
+                data = resp.json()
+                download_url = ""
+                for asset in data.get("assets", []):
+                    if asset.get("name", "").lower().endswith(".dmg"):
+                        download_url = asset.get("browser_download_url", "")
+                        break
+                if not download_url:
+                    return {"ok": False, "error": "未找到 DMG 下载链接"}
+
+                # 下载
+                latest_ver = data.get("tag_name", "?").lstrip("v")
+                logger.info(f"开始下载 v{latest_ver} → {download_path}")
+                dl_resp = await client.get(download_url, follow_redirects=True)
+                if dl_resp.status_code != 200:
+                    return {"ok": False, "error": f"下载失败 (HTTP {dl_resp.status_code})"}
+                with open(download_path, "wb") as f:
+                    f.write(dl_resp.content)
+        except Exception as e:
+            return {"ok": False, "error": f"下载失败: {str(e)[:150]}"}
+
+        size_mb = os.path.getsize(download_path) / (1024 * 1024)
+        return {
+            "ok": True,
+            "message": f"✅ 已下载最新版 v{latest_ver} ({size_mb:.0f}MB)\n"
+                       f"下载位置：{download_path}\n"
+                       f"请关闭本应用，打开 {download_path} 安装新版",
+            "download_path": download_path,
+        }
+
+    # ── 源码版：git pull + 模块重载 ──
     source_dir = config.get("system.source_dir", str(HERE))
     if not os.path.isdir(os.path.join(source_dir, ".git")):
         return {"ok": False, "error": "未找到 git 仓库，无法更新"}
@@ -268,7 +365,7 @@ async def api_apply_update():
         # 清除 docs 文件缓存
         index_path = DOCS / "index.html"
         if index_path.exists():
-            index_path.stat()  # 刷新 stat 缓存
+            index_path.stat()
 
         return {"ok": True, "message": f"更新完成\n{result.stdout[:200]}"}
     except subprocess.TimeoutExpired:
@@ -279,7 +376,10 @@ async def api_apply_update():
 
 @app.get("/api/update/status")
 async def api_update_status():
-    """查看当前版本和 git 状态"""
+    """查看当前版本信息"""
+    is_frozen = getattr(sys, "frozen", False)
+    if is_frozen:
+        return {"version": VERSION, "frozen": True, "mode": "app打包版"}
     import subprocess
     source_dir = config.get("system.source_dir", str(HERE))
     try:
@@ -291,7 +391,7 @@ async def api_update_status():
         modified = r2.stdout.strip()
         return {"version": VERSION, "commits": commits, "modified": modified}
     except:
-        return {"version": VERSION, "commits": "?", "modified": ""}
+        return {"version": VERSION, "frozen": False, "commits": "?", "modified": ""}
 
 
 @app.get("/api/events")

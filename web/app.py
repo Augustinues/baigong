@@ -12,7 +12,7 @@ from fastapi.templating import Jinja2Templates
 
 from .simulator import Simulator, format_state
 
-app = FastAPI(title="百工 Baigong Demo", version="0.2.0")
+app = FastAPI(title="百工 Baigong Demo", version="0.2.1")
 
 HERE = Path(__file__).parent
 templates = Jinja2Templates(directory=str(HERE / "templates"))
