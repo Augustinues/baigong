@@ -3,19 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>百工 Baigong — Agent 系统交互面板</title>
+<title>百工 Baigong — Agent 系统控制台</title>
 <style>
 :root{--bg:#0f1117;--bg2:#1a1d27;--bg3:#232734;--border:#2a2e3a;--text:#e2e8f0;--text-dim:#7c8294;--amber:#f59e0b;--blue:#3b82f6;--green:#10b981;--red:#ef4444;--purple:#8b5cf6;--pink:#ec4899;--radius:6px}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px}
-
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px}
 .hdr-l{display:flex;align-items:center;gap:12px}
 .hdr-l h1{font-size:16px;font-weight:700}
 .hdr-l h1 span{font-weight:300;color:var(--text-dim);font-size:12px;margin-left:4px}
 .hdr-tag{font-size:11px;color:var(--text-dim);border-left:1px solid var(--border);padding-left:10px}
-
-/* 任务输入区 */
 .input-area{display:flex;align-items:center;gap:8px;padding:8px 20px;background:var(--bg2);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .input-area input{flex:1;min-width:200px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:7px 10px;color:var(--text);font-size:13px;outline:none;transition:.15s}
 .input-area input:focus{border-color:var(--amber)}
@@ -26,21 +23,11 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .btn-pri:disabled{opacity:.4;cursor:not-allowed}
 .btn-stop{background:var(--red);color:#fff}
 .btn-stop:hover{background:#dc2626}
-.spd{display:flex;align-items:center;gap:1px;background:var(--bg3);border-radius:5px;padding:2px}
-.spd span{font-size:10px;color:var(--text-dim);padding:0 5px}
-.spd-b{background:transparent;border:none;color:var(--text-dim);padding:3px 7px;border-radius:3px;cursor:pointer;font-size:11px;transition:.15s}
-.spd-b.on{color:var(--amber);background:rgba(245,158,11,.12);font-weight:600}
-
 .stbar{padding:6px 20px;font-size:12px;color:var(--text-dim);background:var(--bg2);border-bottom:1px solid var(--border)}
-
-/* Grid */
 .grid{display:grid;grid-template-columns:200px 1fr 260px;gap:8px;padding:8px;height:calc(100vh - 150px);overflow:hidden}
-
 .pn{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;overflow:hidden}
 .pn-h{display:flex;align-items:center;justify-content:space-between;padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0;font-size:12px;font-weight:600}
 .bdg{background:var(--bg3);padding:1px 6px;border-radius:8px;font-size:10px;color:var(--text-dim)}
-
-/* Agents */
 .pn-agents .pn-h{color:var(--amber);font-size:11px}
 .ag{display:flex;gap:6px;padding:5px;margin:2px 5px;background:var(--bg3);border-radius:4px;border:1px solid transparent;transition:.15s}
 .ag.working{border-color:var(--blue);background:rgba(59,130,246,.04)}
@@ -51,13 +38,9 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .ag-d.busy{background:var(--blue);animation:pulse .8s infinite}
 .ag-d.ok{background:var(--green)}.ag-d.idle{background:var(--text-dim)}.ag-d.wait{background:var(--amber)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
-.ag-b{flex:1;min-width:0}
-.ag-n{font-size:12px;font-weight:600}
-.ag-r{font-size:10px;color:var(--text-dim)}
+.ag-b{flex:1;min-width:0}.ag-n{font-size:12px;font-weight:600}.ag-r{font-size:10px;color:var(--text-dim)}
 .ag-a{font-size:11px;color:var(--blue);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ag-s{display:flex;gap:5px;margin-top:1px;font-size:10px;color:var(--text-dim)}
-
-/* Board */
 .pn-board .pn-h{color:var(--blue);font-size:11px}
 .bc{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:5px;flex:1;overflow:hidden}
 .col{display:flex;flex-direction:column;background:var(--bg3);border-radius:4px;overflow:hidden}
@@ -67,72 +50,49 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .cd{background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:4px 5px;font-size:10px}
 .cd.ip{border-color:var(--blue)}.cd.dn{border-color:var(--green);opacity:.8}
 .cd-g{font-weight:500}.cd-a{font-size:9px;color:var(--text-dim);margin-top:1px}.cd-r{font-size:9px;color:var(--green);margin-top:1px}
-.cd-p{height:2px;background:var(--bg);border-radius:1px;margin-top:2px;overflow:hidden}
-.cd-p>div{height:100%;background:var(--blue);transition:width .3s}
+.cd-p{height:2px;background:var(--bg);border-radius:1px;margin-top:2px;overflow:hidden}.cd-p>div{height:100%;background:var(--blue);transition:width .3s}
 .emp{font-size:10px;color:var(--text-dim);text-align:center;padding:10px}
-
-/* Log */
 .pn-rt{display:flex;flex-direction:column;gap:6px;overflow:hidden}
-.pn-log{flex:1;overflow:hidden}
-.pn-log .pn-h{color:var(--green);font-size:11px}
+.pn-log{flex:1;overflow:hidden}.pn-log .pn-h{color:var(--green);font-size:11px}
 .lb{flex:1;overflow-y:auto;padding:3px 6px;font-family:"SF Mono","Menlo",monospace;font-size:10px}
-.l{display:flex;gap:3px;padding:1px 2px;border-radius:2px;animation:fade .2s}
-.l:hover{background:var(--bg3)}
+.l{display:flex;gap:3px;padding:1px 2px;border-radius:2px;animation:fade .2s}.l:hover{background:var(--bg3)}
 .l-t{color:var(--text-dim);flex-shrink:0}.l-a{flex-shrink:0;font-weight:500}.l-m{flex:1}
 .l.action .l-m{color:var(--blue)}.l.result .l-m{color:var(--green)}.l.thought .l-m{color:var(--amber);font-style:italic}
 .l.memory .l-m{color:var(--purple)}.l.skill .l-m{color:#f97316}
 @keyframes fade{from{opacity:0;transform:translateY(-2px)}to{opacity:1;transform:translateY(0)}}
-
 .pn-mem{flex:0 0 auto;max-height:150px;overflow:hidden}
 .pn-mem .pn-h{color:var(--purple);font-size:11px}
-.mb{padding:3px 5px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}.mn{background:var(--bg3);border-radius:3px;padding:3px 5px;border-left:2px solid var(--purple);font-size:10px}
+.mb{padding:3px 5px;overflow-y:auto;display:flex;flex-direction:column;gap:2px}
+.mn{background:var(--bg3);border-radius:3px;padding:3px 5px;border-left:2px solid var(--purple);font-size:10px}
 .mh{display:flex;justify-content:space-between;font-size:9px;color:var(--text-dim)}
 .mp{color:var(--green);font-weight:600}.mc{font-size:11px;font-weight:600;margin-top:1px}.ms{font-size:9px;color:var(--text-dim)}
-
-.pn-sk{flex:0 0 auto;max-height:70px;overflow:hidden}
-.pn-sk .pn-h{color:#f97316;font-size:11px}
+.pn-sk{flex:0 0 auto;max-height:70px;overflow:hidden}.pn-sk .pn-h{color:#f97316;font-size:11px}
 .sb{padding:3px 5px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:2px}
 .st{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);color:#f97316;padding:2px 5px;border-radius:3px;font-size:9px;font-weight:500}
-
-.pn-ms{flex:0 0 auto;max-height:80px;overflow:hidden}
-.pn-ms .pn-h{color:var(--pink);font-size:11px}
-.msb{padding:2px 5px;overflow-y:auto}
-.msl{font-size:9px;padding:1px 2px;color:var(--text-dim);animation:fade .2s}
-.msl b{color:var(--text)}
-
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.pn-ms{flex:0 0 auto;max-height:80px;overflow:hidden}.pn-ms .pn-h{color:var(--pink);font-size:11px}
+.msb{padding:2px 5px;overflow-y:auto}.msl{font-size:9px;padding:1px 2px;color:var(--text-dim);animation:fade .2s}.msl b{color:var(--text)}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
-
 <div class="hdr">
   <div class="hdr-l">
     <h1>🏮 百工 <span>Baigong</span></h1>
-    <span class="hdr-tag">多 Agent 协作系统 — 交互式控制台</span>
+    <span class="hdr-tag">多 Agent 协作系统</span>
   </div>
-  <div class="spd">
-    <span>速度</span>
-    <button class="spd-b" data-v=".5">½×</button>
-    <button class="spd-b on" data-v="1">1×</button>
-    <button class="spd-b" data-v="2">2×</button>
-    <button class="spd-b" data-v="5">5×</button>
-    <button class="spd-b" data-v="10">10×</button>
+  <div style="display:flex;gap:6px;align-items:center">
+    <button class="btn btn-pri" id="btnStart">▶ 启动系统</button>
+    <button class="btn btn-stop" id="btnStop" style="display:none">⏹ 停止</button>
   </div>
 </div>
-
 <div class="input-area">
-  <input id="taskInput" type="text" placeholder="输入你的任务，例如：收集 10 篇翡翠鉴别资料并入库" autofocus>
-  <button class="btn btn-pri" id="btnSubmit">📤 下发任务</button>
-  <button class="btn btn-stop" id="btnStop" style="display:none">⏹ 停止</button>
-  <button class="btn" id="btnClear" style="background:var(--bg3);color:var(--text-dim)" onclick="resetAll()">↺ 重置</button>
+  <input id="taskInput" type="text" placeholder="输入任务，例如：收集 10 篇翡翠鉴别资料并入库" autofocus disabled>
+  <button class="btn btn-pri" id="btnSubmit" disabled>📤 下发任务</button>
 </div>
-<div class="stbar" id="statusBar">输入一个任务，点击「下发任务」让 Agent 集群为你工作</div>
-
+<div class="stbar" id="statusBar">先点击「启动系统」初始化百工 Agent 集群</div>
 <div class="grid">
   <section class="pn pn-agents">
-    <div class="pn-h"><span>👥 Agent 注册表</span><span class="bdg" id="ac">5 人</span></div>
+    <div class="pn-h"><span>👥 Agent 注册表</span><span class="bdg" id="ac">等待启动...</span></div>
     <div id="al"></div>
   </section>
   <section class="pn pn-board">
@@ -144,300 +104,147 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
     </div>
   </section>
   <section class="pn-rt">
-    <div class="pn pn-log">
-      <div class="pn-h"><span>📜 Agent 思考-行动日志</span></div>
-      <div class="lb" id="ll"></div>
-    </div>
-    <div class="pn pn-mem">
-      <div class="pn-h"><span>🧠 长期记忆</span></div>
-      <div class="mb" id="ml"></div>
-    </div>
-    <div class="pn pn-sk">
-      <div class="pn-h"><span>🎯 Skill</span></div>
-      <div class="sb" id="sl"></div>
-    </div>
-    <div class="pn pn-ms">
-      <div class="pn-h"><span>📨 消息总线</span></div>
-      <div class="msb" id="msgl"></div>
-    </div>
+    <div class="pn pn-log"><div class="pn-h"><span>📜 思考-行动日志</span></div><div class="lb" id="ll"></div></div>
+    <div class="pn pn-mem"><div class="pn-h"><span>🧠 长期记忆</span></div><div class="mb" id="ml"></div></div>
+    <div class="pn pn-sk"><div class="pn-h"><span>🎯 Skill</span></div><div class="sb" id="sl"></div></div>
+    <div class="pn pn-ms"><div class="pn-h"><span>📨 消息总线</span></div><div class="msb" id="msgl"></div></div>
   </section>
 </div>
-
 <script>
-// ── State ──
-const S={running:false,cancelled:false,speed:1,step:0,finished:false,currentTask:''};
-const AGENTS=[
-  {id:'manager',name:'张经理',role:'manager',icon:'👔',color:'#f59e0b',status:'idle',action:'',tools:0,tasks:0,mems:0,msgs:0},
-  {id:'researcher',name:'王研究员',role:'researcher',icon:'🔍',color:'#3b82f6',status:'idle',action:'',tools:0,tasks:0,mems:0,msgs:0},
-  {id:'editor',name:'李编辑',role:'editor',icon:'✏️',color:'#10b981',status:'idle',action:'',tools:0,tasks:0,mems:0,msgs:0},
-  {id:'admin',name:'陈管理员',role:'knowledge_admin',icon:'📚',color:'#8b5cf6',status:'idle',action:'',tools:0,tasks:0,mems:0,msgs:0},
-  {id:'qa',name:'赵质检',role:'qa',icon:'✅',color:'#ef4444',status:'idle',action:'',tools:0,tasks:0,mems:0,msgs:0},
-];
-let TASKS=[],LOGS=[],MEMORIES=[],SKILLS=[],MESSAGES=[];
-let renderTimer=null;
-
 const $=id=>document.getElementById(id);
+let es=null, timer=null;
 
-function st(id,action,status='working'){
-  const a=AGENTS.find(x=>x.id===id);if(a){a.action=action;a.status=status}
-}
-function log(id,msg,type='action'){
-  const a=AGENTS.find(x=>x.id===id);
-  const t=new Date().toLocaleTimeString('zh-CN',{hour12:false});
-  LOGS.push({t,a:a?.name||'',icon:a?.icon||'•',msg,type});
-  if(LOGS.length>400)LOGS.splice(0,80);
-}
-function task(goal,status='pending',assignee='',parent=''){
-  const id='t'+Date.now().toString(36);
-  TASKS.push({id,goal,status,assignee,progress:0,result:'',parent});
-  return id;
-}
-function ut(id,obj){const t=TASKS.find(x=>x.id===id);if(t)Object.assign(t,obj)}
-function mem(aid,concept,summary,pct){
-  const a=AGENTS.find(x=>x.id===aid);
-  MEMORIES.push({agent:a?.name||'',icon:a?.icon||'',concept,summary,pct});
-  if(MEMORIES.length>15)MEMORIES.shift();
-}
-function sk(name,desc){if(!SKILLS.find(x=>x.name===name))SKILLS.push({name,desc})}
-function msg(from,to,text){MESSAGES.push({from,to,text});if(MESSAGES.length>40)MESSAGES.shift()}
-
-const w=sec=>new Promise((r,rej)=>{
-  const check=()=>{if(S.cancelled)rej(new Error('cancelled'))};
-  const id=setInterval(check,100);
-  setTimeout(()=>{clearInterval(id);if(!S.cancelled)r()},sec*1000/S.speed);
-});
-
-// ── 处理用户任务 ──
-async function processTask(taskText){
-  S.cancelled=false;S.finished=false;S.running=true;S.currentTask=taskText;
-  $('btnSubmit').disabled=true;$('btnStop').style.display='inline-block';
-  $('statusBar').innerHTML=`⚙️ 处理中: "${taskText}"`;
-
-  // 清除之前任务（保留系统状态）
-  TASKS=[];
-  AGENTS.forEach(a=>{a.status='idle';a.action='';});
-  LOGS=[];SKILLS=[];MESSAGES=[];
-  // 保留记忆
-
-  log('manager','🏮 系统启动，Agent 就位','thought');
-  msg('System','All','百工系统初始化');
-  renderForce();
-  await w(1);
-
-  // 从任务文本提取关键词
-  const words=taskText.replace(/[的了我吧呢吗]/g,'').split(/[\s,，、。.]/).filter(w=>w.length>1);
-  const keyword=words[0]||'目标';
-
-  // ── CEO 下发 → 主管接收 ──
-  const rt=task(taskText,'in_progress','manager');
-  st('manager','分析任务');
-  log('manager','📋 收到 CEO 新任务，开始分析','action');
-  msg('CEO','manager',`[TASK_ASSIGN] ${taskText}`);
-  await w(1);
-
-  // 主管拆解
-  log('manager','[思考] 分析任务目标 → 拆解子任务','thought');
-  st('manager','拆解中');
-  const subGoals=generateSubTasks(taskText);
-  subGoals.forEach((g,i)=>{
-    log('manager',`[行动] 创建子任务${i+1}: ${g.agent} → ${g.name}`,`${g.text}`);
-  });
-  await w(.8);
-  ut(rt,{progress:.1});
-
-  // 创建子任务
-  const st1=task(subGoals[0].name,'in_progress',subGoals[0].agent,rt);
-  const st2=task(subGoals[1].name,'pending',subGoals[1].agent,rt);
-  const st3=task(subGoals[2].name,'pending',subGoals[2].agent,rt);
-  msg('manager',subGoals[0].agent,'[TASK_ASSIGN] '+subGoals[0].name);
-  msg('manager',subGoals[1].agent,'[TASK_ASSIGN] '+subGoals[1].name);
-  msg('manager',subGoals[2].agent,'[TASK_ASSIGN] '+subGoals[2].name);
-
-  // ── Agent 1: 研究员 ──
-  await w(.5);
-  st('manager','等待中','waiting');
-  const a1=AGENTS.find(x=>x.id===subGoals[0].agent);
-  const kw1=words[0]||'相关';
-  log(a1.id,'[感知] 看板检测到新任务 → 角色匹配','thought');
-  st(a1.id,'领取任务');
-  log(a1.id,`[决策] 权限检查通过 → 执行: 搜索"${kw1}"相关信息`,'action');
-  msg(a1.id,'manager','[STATUS_UPDATE] 已领取，开始搜索');
-  await w(.6);
-  st(a1.id,'搜索中');
-  log(a1.id,`🔧 调用 web_search(query="${kw1} ${keyword}", limit=5)`,'action');
-  a1.tools++;
-  await w(1);
-  log(a1.id,'[结果] 找到多条相关结果','result');
-  log(a1.id,`🔧 调用 web_search(query="${keyword} 最新资讯", limit=5)`,'action');
-  a1.tools++;
-  await w(.8);
-  log(a1.id,'[结果] 搜索完成，收集到有效资料','result');
-  // 记忆巩固
-  log(a1.id,`[记忆巩固] 学习: "${kw1}" 相关搜索经验已记录`,'memory');
-  mem(a1.id,`${kw1}搜索策略`,`关键词"${kw1} ${keyword}"效果较好`,65);
-  a1.mems++;
-  await w(.6);
-  log(a1.id,'[行动] 结果写回看板','action');
-  ut(st1,{status:'done',result:'资料已搜索完成'});
-  ut(rt,{progress:.35});
-  st(a1.id,'✅ 完成','done');a1.tasks++;
-  msg(a1.id,'manager','[TASK_RESULT] 搜索完成');
-
-  // ── Agent 2: 编辑 ──
-  const a2idx=subGoals[1].agent;
-  await w(.5);
-  log(a2idx,'[感知] 研究员完成 → 可取新任务','thought');
-  st(a2idx,'领取任务');
-  log(a2idx,'[决策] 领取整理任务','action');
-  msg(a2idx,'manager','[STATUS_UPDATE] 开始整理');
-  await w(.5);
-  st(a2idx,'整理中');
-  log(a2idx,'[行动] 去重: 筛选有效内容','action');
-  await w(.8);
-  log(a2idx,'[行动] 分类: 按主题整理','action');
-  await w(.8);
-  log(a2idx,'[结果] 整理完成，已标准化格式','result');
-  ut(st2,{status:'done',result:'资料已整理分类'});
-  ut(rt,{progress:.65});
-  st(a2idx,'✅ 完成','done');AGENTS.find(x=>x.id===a2idx).tasks++;
-  msg(a2idx,'manager','[TASK_RESULT] 整理完毕');
-
-  // ── Agent 3: 管理员 ──
-  const a3idx=subGoals[2].agent;
-  await w(.5);
-  log(a3idx,'[感知] 看板变化','thought');
-  st(a3idx,'领取任务');
-  msg(a3idx,'manager','[STATUS_UPDATE] 开始入库');
-  await w(.5);
-  st(a3idx,'入库中');
-  log(a3idx,`🔧 调用 kb_write(title="${kw1}资料汇总")`,'action');
-  AGENTS.find(x=>x.id===a3idx).tools++;
-  await w(1);
-  log(a3idx,'[结果] 写入成功','result');
-  ut(st3,{status:'done',result:'资料已入库'});
-  ut(rt,{progress:.85});
-  st(a3idx,'✅ 完成','done');
-  AGENTS.find(x=>x.id===a3idx).tasks++;
-  msg(a3idx,'manager','[TASK_RESULT] 入库完成');
-
-  // ── 质检 ──
-  await w(.4);
-  log('qa','[感知] 管理员完成，开始质检','thought');
-  st('qa','质检中');
-  await w(.8);
-  log('qa','[结果] 质检通过，内容合格','result');
-  st('qa','✅ 通过','done');AGENTS.find(x=>x.id==='qa').tasks++;
-  msg('qa','manager','[TASK_RESULT] 质检通过');
-
-  // ── 主管收尾 ──
-  await w(.5);
-  st('manager','汇总中','working');
-  log('manager','[思考] 所有子任务完成，汇总报告','thought');
-  await w(.8);
-  log('manager',`[结果] 📊 "${taskText}" 全部完成 ✅`,'result');
-
-  // Skill
-  log('manager',`[Skill挖掘] 检测到"搜索"类任务重复 → 形成 "资料搜索" Skill`,'skill');
-  sk(`${keyword}资料搜索`,`自动搜索+整理 ${keyword} 相关资料`);
-  msg('System','All','[NOTIFICATION] 新 Skill 自动形成');
-  msg('manager','CEO','[TASK_RESULT] 🎉 任务完成！');
-  await w(.3);
-  ut(rt,{status:'done',progress:1,result:'全部完成 ✅'});
-  st('manager','🎉 完成','done');AGENTS.find(x=>x.id==='manager').tasks++;
-
-  // 记忆
-  mem('researcher',`${keyword}知识`,`关于"${keyword}"的搜索经验和知识体系`,75);
-  AGENTS.find(x=>x.id==='researcher').mems++;
-  log('researcher',`[记忆巩固] "${keyword}" 相关知识已巩固到长期记忆`,'memory');
-
-  S.finished=true;S.running=false;
-  $('btnSubmit').disabled=false;$('btnStop').style.display='none';
-  $('statusBar').innerHTML=`🎉 "${taskText}" 已完成！可以继续下发新任务`;
+// ── API 调用 ──
+async function api(path,opts={}){
+  const r=await fetch(path,{headers:{'Content-Type':'application/json'},...opts});
+  return r.json();
 }
 
-function generateSubTasks(text){
-  return [
-    {name:`搜索关于"${text}"的资料`,agent:'researcher',text:'action'},
-    {name:`整理和分类${text}相关资料`,agent:'editor',text:'action'},
-    {name:`将${text}资料写入知识库`,agent:'admin',text:'action'},
-  ];
+// ── 启动 ──
+$('btnStart').onclick=async function(){
+  this.disabled=true;
+  $('statusBar').innerHTML='⏳ 初始化百工系统...';
+  const r=await api('/api/start',{method:'POST'});
+  if(!r.ok){
+    $('statusBar').innerHTML='❌ 启动失败: '+(r.error||'未知错误');
+    this.disabled=false;
+    return;
+  }
+  $('btnStart').style.display='none';
+  $('btnStop').style.display='inline-block';
+  $('taskInput').disabled=false;
+  $('btnSubmit').disabled=false;
+  $('statusBar').innerHTML='✅ 系统已启动！输入任务下发';
+  $('ac').textContent='5 人';
+  connectSSE();
+};
+
+// ── 停止 ──
+$('btnStop').onclick=async function(){
+  await api('/api/stop',{method:'POST'});
+  $('btnStart').disabled=false;
+  $('btnStart').style.display='inline-block';
+  this.style.display='none';
+  $('taskInput').disabled=true;
+  $('btnSubmit').disabled=true;
+  $('statusBar').innerHTML='⏹ 系统已停止';
+  if(es){es.close();es=null}
+};
+
+// ── 下发任务 ──
+$('btnSubmit').onclick=async function(){
+  const text=$('taskInput').value.trim();
+  if(!text)return;
+  $('btnSubmit').disabled=true;
+  $('statusBar').innerHTML=`⚙️ 下发任务: "${text}"`;
+  const r=await api('/api/task',{method:'POST',body:JSON.stringify({goal:text})});
+  if(r.ok){
+    $('statusBar').innerHTML=`⚙️ 任务已下发，Agent 开始处理: "${text}"`;
+    $('taskInput').value='';
+  }else{
+    $('statusBar').innerHTML='❌ 下发失败: '+(r.error||'');
+  }
+  setTimeout(()=>{$('btnSubmit').disabled=false},1000);
+};
+$('taskInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnSubmit').click()});
+
+// ── SSE 实时数据 ──
+function connectSSE(){
+  if(es)es.close();
+  es=new EventSource('/api/events');
+  es.onmessage=function(e){
+    try{
+      const state=JSON.parse(e.data);
+      render(state);
+    }catch(err){}
+  };
+  es.onerror=function(){};
+  // 立即获取一次初始状态
+  fetchState();
+}
+async function fetchState(){
+  const state=await api('/api/state');
+  if(state)render(state);
 }
 
 // ── 渲染 ──
-function render(){
-  // Agents
-  $('al').innerHTML=AGENTS.map(a=>{
+function render(state){
+  if(!state)return;
+  renderAgents(state);
+  renderBoard(state);
+  renderLog(state);
+  renderMemory(state);
+  renderSkills(state);
+  renderMessages(state);
+}
+function renderAgents(state){
+  if(!state.agents||!state.agents.length){
+    $('al').innerHTML='<div style="text-align:center;padding:20px;color:var(--text-dim)">系统未启动</div>';
+    return;
+  }
+  $('al').innerHTML=state.agents.map(a=>{
     const sd=a.status==='working'?'busy':a.status==='done'?'ok':a.status==='waiting'?'wait':'idle';
-    return `<div class="ag ${a.status}"><div class="ag-av" style="background:${a.color}15;border-color:${a.color}">${a.icon}<span class="ag-d ${sd}"></span></div><div class="ag-b"><div class="ag-n">${a.name}</div><div class="ag-r">${a.role}</div><div class="ag-a">${a.action||'空闲'}</div><div class="ag-s"><span>🔧${a.tools}</span><span>✅${a.tasks}</span><span>🧠${a.mems}</span></div></div></div>`;
+    const color=a.color||'#6b7280';
+    return `<div class="ag ${a.status}"><div class="ag-av" style="background:${color}15;border-color:${color}">${a.icon||'🤖'}<span class="ag-d ${sd}"></span></div><div class="ag-b"><div class="ag-n">${a.name}</div><div class="ag-r">${a.role}</div><div class="ag-a">${a.action||'空闲'}</div><div class="ag-s"><span>🔧${a.tool_calls||0}</span><span>✅${a.tasks_done||0}</span><span>🧠${a.memory_nodes||0}</span></div></div></div>`;
   }).join('');
-
-  // Board
-  $('tc').textContent=TASKS.length;
+  $('ac').textContent=state.agents.length+' 人';
+}
+function renderBoard(state){
+  $('tc').textContent=(state.tasks||[]).length;
   const p=[],ip=[],dn=[];
-  TASKS.forEach(t=>{
+  (state.tasks||[]).forEach(t=>{
     const h=`<div class="cd ${t.status}"><div class="cd-g">${t.goal}</div>${t.assignee?`<div class="cd-a">👤${t.assignee}</div>`:''}${t.result?`<div class="cd-r">${t.result}</div>`:''}${t.progress>0?`<div class="cd-p"><div style="width:${t.progress*100}%"></div></div>`:''}</div>`;
     if(t.status==='pending')p.push(h);else if(t.status==='in_progress')ip.push(h);else dn.push(h);
   });
   $('cp').innerHTML=p.join('')||'<div class="emp">—</div>';
   $('ci').innerHTML=ip.join('')||'<div class="emp">—</div>';
   $('cd').innerHTML=dn.join('')||'<div class="emp">—</div>';
-
-  // Log
-  $('ll').innerHTML=LOGS.length?LOGS.slice(-80).map(l=>`<div class="l ${l.type}"><span class="l-t">${l.t||''}</span><span class="l-a">${l.icon||''} ${l.a||''}</span><span class="l-m">${l.msg}</span></div>`).join(''):'<div style="text-align:center;padding:12px;color:var(--text-dim)">等待任务下发...</div>';
-  const ll=$('ll');ll.scrollTop=ll.scrollHeight;
-
-  // Memory
-  $('ml').innerHTML=MEMORIES.length?MEMORIES.slice().reverse().map(m=>`<div class="mn"><div class="mh"><span>${m.icon||''} ${m.agent}</span><span class="mp">${m.pct}%</span></div><div class="mc">${m.concept}</div><div class="ms">${m.summary}</div></div>`).join(''):'<div style="font-size:10px;color:var(--text-dim);text-align:center;padding:6px">等待记忆巩固...</div>';
-
-  // Skills
-  $('sl').innerHTML=SKILLS.length?SKILLS.map(s=>`<span class="st">🎯 ${s.name}</span>`).join(''):'<div style="font-size:10px;color:var(--text-dim);text-align:center;padding:6px">等待...</div>';
-
-  // Messages
-  $('msgl').innerHTML=MESSAGES.slice(-25).map(m=>`<div class="msl"><b>${m.from}</b> → ${m.to}: ${m.text}</div>`).join('');
-  const msgl=$('msgl');msgl.scrollTop=msgl.scrollHeight;
 }
-
-function renderForce(){render();if(renderTimer)clearInterval(renderTimer);renderTimer=setInterval(render,150)}
-
-// ── 控制 ──
-$('btnSubmit').onclick=async function(){
-  const input=$('taskInput');
-  const text=input.value.trim();
-  if(!text||S.running)return;
-  if(renderTimer)clearInterval(renderTimer);
-  try{await processTask(text)}catch(e){if(e.message!=='cancelled')throw e}
-  clearInterval(renderTimer);render();
-};
-
-$('taskInput').addEventListener('keydown',e=>{if(e.key==='Enter')$('btnSubmit').click()});
-
-$('btnStop').onclick=function(){
-  S.cancelled=true;S.running=false;
-  $('btnSubmit').disabled=false;$('btnStop').style.display='none';
-  $('statusBar').innerHTML='⏹ 已停止';
-};
-
-function resetAll(){
-  S.cancelled=true;S.running=false;S.finished=false;S.currentTask='';
-  if(renderTimer)clearInterval(renderTimer);
-  AGENTS.forEach(a=>{a.status='idle';a.action='';a.tools=0;a.tasks=0;a.mems=0;a.msgs=0});
-  TASKS=[];LOGS=[];MEMORIES=[];SKILLS=[];MESSAGES=[];
-  $('taskInput').value='';
-  $('btnSubmit').disabled=false;$('btnStop').style.display='none';
-  $('statusBar').innerHTML='已重置。输入一个任务，点击「下发任务」让 Agent 集群为你工作';
-  render();
+function renderLog(state){
+  const el=$('ll');
+  const logs=state.logs||[];
+  if(!logs.length){el.innerHTML='<div style="text-align:center;padding:12px;color:var(--text-dim)">等待事件...</div>';return}
+  el.innerHTML=logs.map(l=>`<div class="l ${l.type||''}"><span class="l-t">${l.t||''}</span><span class="l-a">${l.icon||''} ${l.a||''}</span><span class="l-m">${l.msg}</span></div>`).join('');
+  el.scrollTop=el.scrollHeight;
 }
-
-document.querySelectorAll('.spd-b').forEach(b=>{
-  b.onclick=function(){
-    document.querySelectorAll('.spd-b').forEach(x=>x.classList.remove('on'));
-    this.classList.add('on');S.speed=parseFloat(this.dataset.v);
-  };
-});
-
-// 初始渲染
-resetAll();
-setInterval(render,200);
+function renderMemory(state){
+  const el=$('ml');
+  const mems=state.memories||[];
+  if(!mems.length){el.innerHTML='<div style="font-size:10px;color:var(--text-dim);text-align:center;padding:6px">等待记忆巩固...</div>';return}
+  el.innerHTML=mems.map(m=>`<div class="mn"><div class="mh"><span>${m.icon||''} ${m.agent||''}</span><span class="mp">${m.pct||0}%</span></div><div class="mc">${m.concept||''}</div><div class="ms">${m.summary||''}</div></div>`).join('');
+}
+function renderSkills(state){
+  const el=$('sl');
+  const skills=state.skills||[];
+  el.innerHTML=skills.length?skills.map(s=>`<span class="st">🎯 ${s.name||''}</span>`).join(''):'<div style="font-size:10px;color:var(--text-dim);text-align:center;padding:6px">等待...</div>';
+}
+function renderMessages(state){
+  const el=$('msgl');
+  const msgs=state.messages||[];
+  if(!msgs.length){el.innerHTML='';return}
+  el.innerHTML=msgs.map(m=>`<div class="msl"><b>${m.from||''}</b> → ${m.to||''}: ${m.text||''}</div>`).join('');
+  el.scrollTop=el.scrollHeight;
+}
 </script>
 </body>
 </html>
