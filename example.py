@@ -1,5 +1,5 @@
 """
-完整示例——使用 Agent Company SDK 搭建多 Agent 协作系统
+完整示例——使用百工 SDK 搭建多 Agent 协作系统
 
 这个示例演示：
 1. 注册角色定义
