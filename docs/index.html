@@ -5,7 +5,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>百工 Baigong — Agent 管理</title>
 <style>
-:root{--bg:#0f1117;--bg2:#1a1d27;--bg3:#232734;--border:#2a2e3a;--text:#e2e8f0;--dim:#7c8294;--accent:#f59e0b;--accent2:#3b82f6;--green:#10b981;--red:#ef4444;--purple:#8b5cf6}
+/* ═══ 完整 UI 主题系统 ═══ */
+:root {
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#232734;--border:#2a2e3a;
+  --text:#e2e8f0;--dim:#7c8294;--accent:#f59e0b;--accent2:#3b82f6;
+  --green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+}
+/* 7 套完整主题 */
+[data-theme="amber"] {
+  --bg:#0f1117;--bg2:#1a1d27;--bg3:#232734;--border:#2a2e3a;
+  --text:#e2e8f0;--dim:#7c8294;--accent:#f59e0b;--accent2:#f97316;
+}
+[data-theme="jade"] {
+  --bg:#0c1713;--bg2:#14231e;--bg3:#1b2d27;--border:#213a32;
+  --text:#d1fae5;--dim:#6b9e86;--accent:#10b981;--accent2:#059669;
+}
+[data-theme="indigo"] {
+  --bg:#0f1423;--bg2:#181f36;--bg3:#1e2742;--border:#25304f;
+  --text:#dbeafe;--dim:#7c8fc7;--accent:#6366f1;--accent2:#4f46e5;
+}
+[data-theme="twilight"] {
+  --bg:#170f23;--bg2:#231b30;--bg3:#2d233d;--border:#382d49;
+  --text:#e9dff5;--dim:#9a8bb3;--accent:#a855f7;--accent2:#9333ea;
+}
+[data-theme="daylight"] {
+  --bg:#f8fafc;--bg2:#ffffff;--bg3:#f1f5f9;--border:#e2e8f0;
+  --text:#0f172a;--dim:#64748b;--accent:#f59e0b;--accent2:#d97706;
+}
+[data-theme="rose"] {
+  --bg:#1f1014;--bg2:#2c181c;--bg3:#381f24;--border:#46282e;
+  --text:#fce7f3;--dim:#b0798e;--accent:#ec4899;--accent2:#db2777;
+}
+[data-theme="midnight"] {
+  --bg:#06080e;--bg2:#0d0f16;--bg3:#13151e;--border:#1a1d28;
+  --text:#c8ccd6;--dim:#555a68;--accent:#38bdf8;--accent2:#0ea5e9;
+}
+
+/* 平滑过渡 */
+body { transition: background-color .25s, color .25s; }
+.panel, .hdr, .task-bar, .card, input, select, textarea, .btn, .dot { transition: all .25s; }
+
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
 /* ═══ Header ═══ */
@@ -15,18 +54,18 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 #sysStat{font-size:11px;color:var(--dim);min-width:70px}
 .hdr-center{display:flex;align-items:center;gap:6px}
 .btn{padding:4px 10px;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
-.btn-pri{background:var(--accent);color:#1a1d27}.btn-pri:hover{background:#d48a08}.btn-pri:disabled{opacity:.4;cursor:not-allowed}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
-.btn-ok{background:var(--green);color:#fff}.btn-ok:hover{background:#059669}
+.btn-pri{background:var(--accent);color:var(--bg)}.btn-pri:hover{filter:brightness(1.1)}.btn-pri:disabled{filter:saturate(0);opacity:.5;cursor:not-allowed}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{filter:brightness(1.2)}
+.btn-ok{background:var(--green);color:#fff}.btn-ok:hover{filter:brightness(1.2)}
 .btn-sm{padding:2px 7px;font-size:10px}
 /* task input bar */
 .task-bar{display:flex;align-items:center;gap:6px;padding:6px 14px;background:var(--bg2);border-bottom:1px solid var(--border);flex-shrink:0}
 .task-bar input{flex:1;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;outline:none}
 .task-bar input:focus{border-color:var(--accent)}
 .task-bar input::placeholder{color:var(--dim)}
-.theme-picker{display:flex;gap:2px;margin-left:auto}
-.theme-dot{width:14px;height:14px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.15s}
-.theme-dot.act{border-color:#fff}.theme-dot:hover{transform:scale(1.2)}
+.theme-picker{display:flex;gap:3px;margin-left:auto}
+.theme-dot{width:15px;height:15px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.2s;transform:scale(1)}
+.theme-dot.act{border-color:var(--text)}.theme-dot:hover{transform:scale(1.25)}
 .hdr-actions{display:flex;align-items:center;gap:3px}
 .hdr-actions .btn{background:var(--bg3);color:var(--dim);padding:2px 6px}.hdr-actions .btn:hover{color:var(--text)}
 /* ═══ Main Layout ═══ */
@@ -41,37 +80,37 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .ag-list{flex:1;overflow-y:auto;padding:4px}
 .ag-card{display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:5px;cursor:pointer;transition:.1s;border:1px solid transparent;margin-bottom:2px}
 .ag-card:hover{background:var(--bg3)}
-.ag-card.sel{border-color:var(--accent);background:rgba(245,158,11,.08)}
+.ag-card.sel{border-color:var(--accent);background:rgba(var(--accent-rgb,245,158,11),.08)}
 .ag-av-wrap{position:relative;flex-shrink:0}
-.ag-av{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;background:rgba(245,158,11,.1)}
+.ag-av{width:28px;height:28px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--bg3)}
 .dot{position:absolute;bottom:-1px;right:-1px;width:7px;height:7px;border-radius:50%;border:1.5px solid var(--bg2)}
 .dot-idle{background:var(--dim)}.dot-thinking{background:var(--accent);animation:pulse .8s infinite}.dot-acting{background:var(--accent2);animation:pulse .8s infinite}.dot-done{background:var(--green)}.dot-error{background:var(--red)}
 .ag-info{flex:1;min-width:0}
 .ag-name{font-size:12px;font-weight:600}
-.ag-role2{font-size:9px;color:var(--dim);margin-top:0}
-.ag-action{font-size:9px;color:var(--dim);margin-top:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ag-role2{font-size:9px;color:var(--dim)}
+.ag-action{font-size:9px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 /* ── Center Content ── */
 .center-scroll{flex:1;overflow-y:auto;padding:10px}
-/* overview */
 .ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-bottom:12px}
 .ov-card{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:8px;text-align:center}
-.ov-val{font-size:20px;font-weight:700}
+.ov-val{font-size:20px;font-weight:700;color:var(--accent)}
 .ov-lbl{font-size:10px;color:var(--dim);margin-top:2px}
 /* edit form */
-.edit-s{margin-bottom:14px}
+.edit-s{margin-bottom:12px}
 .edit-s h3{font-size:11px;font-weight:600;color:var(--accent);margin-bottom:6px;padding-bottom:3px;border-bottom:1px solid var(--border)}
-.fg{margin-bottom:8px}
-.fg label{display:block;font-size:10px;font-weight:600;margin-bottom:2px;color:#cbd5e1}
-.fg input,.fg select,.fg textarea{width:100%;padding:6px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;outline:none;font-family:inherit}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg{margin-bottom:7px}
+.fg label{display:block;font-size:10px;font-weight:600;margin-bottom:2px;color:var(--text)}
+.fg input,.fg select,.fg textarea{width:100%;padding:5px 7px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;outline:none;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 1px rgba(var(--accent-rgb,245,158,11),.15)}
 .fg textarea{min-height:40px;resize:vertical}
 .fg-hint{font-size:9px;color:var(--dim);margin-top:1px}
 .tool-grid{display:flex;flex-wrap:wrap;gap:3px}
 .tool-chk{display:flex;align-items:center;gap:3px;padding:2px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:3px;cursor:pointer;font-size:10px;transition:.1s}
 .tool-chk input{display:none}
-.tool-chk.chk{border-color:var(--accent);background:rgba(245,158,11,.1)}
+.tool-chk.chk{border-color:var(--accent);background:rgba(var(--accent-rgb,245,158,11),.1);color:var(--accent)}
 .edit-acts{display:flex;gap:6px;justify-content:flex-end;padding-top:6px;border-top:1px solid var(--border);margin-top:4px}
+.edit-acts .btn{padding:6px 14px;font-size:12px}
 /* ── Right: Logs ── */
 .log-box{flex:1;overflow-y:auto;padding:3px 6px;font-family:"SF Mono","Menlo",monospace;font-size:10px}
 .l{display:flex;gap:3px;padding:1px 3px;border-radius:2px;line-height:1.5}
@@ -82,7 +121,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;align-items:center;justify-content:center}
 .modal.act{display:flex}
 .modal-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5)}
-.modal-c{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:400px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.modal-c{position:relative;background:var(--bg2);border:1px solid var(--border);border-radius:8px;width:420px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,.4)}
 .modal-h{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);font-size:13px;font-weight:600}
 .modal-close{cursor:pointer;color:var(--dim);padding:2px 6px;border-radius:3px;font-size:14px}.modal-close:hover{background:var(--bg3);color:var(--text)}
 .modal-b{padding:14px}
@@ -90,9 +129,9 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 .up-label{color:var(--dim)}.up-val{font-weight:600}
 .up-status{margin:8px 0;font-size:11px;padding:6px;background:var(--bg3);border-radius:4px;min-height:18px;color:var(--dim);white-space:pre-wrap}
 .up-acts{display:flex;gap:6px;margin-top:6px}
-.up-preview{font-size:10px;color:var(--dim);margin-top:6px;max-height:100px;overflow-y:auto;padding:4px;white-space:pre-wrap}
+.up-preview{font-size:10px;color:var(--dim);margin-top:6px;max-height:100px;overflow-y:auto;padding:4px;white-space:pre-wrap;background:var(--bg);border-radius:4px}
 /* Scroll */
-::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track:transparent::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}::-webkit-scrollbar-thumb:hover{background:var(--dim)}
 </style>
 </head>
 <body>
@@ -111,7 +150,7 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 <div class="task-bar">
   <input id="taskInput" placeholder="给 Agent 下发任务... 例如：搜索最新的 AI Agent 框架" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();submitTask()}">
   <button class="btn btn-pri btn-sm" onclick="submitTask()">📤 发送</button>
-  <select id="taskAgent" style="padding:4px 6px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:11px;outline:none">
+  <select id="taskAgent" class="task-agent-sel">
     <option value="">自动分配</option>
   </select>
 </div>
@@ -152,151 +191,329 @@ body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;backgr
 
 <script>
 const $=id=>document.getElementById(id);
-const THEMES={amber:"#f59e0b",blue:"#3b82f6",green:"#10b981",purple:"#8b5cf6",red:"#ef4444",pink:"#ec4899",cyan:"#06b6d4"};
-let es=null,state={agents:[],logs:[]},selectedAgent=null,providers={};
 
-async function api(path,o={}){const r=await fetch(path,{headers:{'Content-Type':'application/json'},...o});return r.json()}
+/* ═══ 完整 UI 主题：7 套 ═══ */
+const FULL_THEMES = {
+  amber:  { name:'琥珀', bg:'#0f1117',bg2:'#1a1d27',bg3:'#232734',border:'#2a2e3a',text:'#e2e8f0',dim:'#7c8294',accent:'#f59e0b',accent2:'#f97316',dot:'#f59e0b' },
+  jade:   { name:'翡翠', bg:'#0c1713',bg2:'#14231e',bg3:'#1b2d27',border:'#213a32',text:'#d1fae5',dim:'#6b9e86',accent:'#10b981',accent2:'#059669',dot:'#10b981' },
+  indigo: { name:'靛蓝', bg:'#0f1423',bg2:'#181f36',bg3:'#1e2742',border:'#25304f',text:'#dbeafe',dim:'#7c8fc7',accent:'#6366f1',accent2:'#4f46e5',dot:'#6366f1' },
+  twilight:{name:'暮紫', bg:'#170f23',bg2:'#231b30',bg3:'#2d233d',border:'#382d49',text:'#e9dff5',dim:'#9a8bb3',accent:'#a855f7',accent2:'#9333ea',dot:'#a855f7' },
+  daylight:{name:'白昼', bg:'#f8fafc',bg2:'#ffffff',bg3:'#f1f5f9',border:'#e2e8f0',text:'#0f172a',dim:'#64748b',accent:'#f59e0b',accent2:'#d97706',dot:'#f59e0b' },
+  rose:   { name:'玫瑰', bg:'#1f1014',bg2:'#2c181c',bg3:'#381f24',border:'#46282e',text:'#fce7f3',dim:'#b0798e',accent:'#ec4899',accent2:'#db2777',dot:'#ec4899' },
+  midnight:{name:'极夜', bg:'#06080e',bg2:'#0d0f16',bg3:'#13151e',border:'#1a1d28',text:'#c8ccd6',dim:'#555a68',accent:'#38bdf8',accent2:'#0ea5e9',dot:'#38bdf8' },
+};
+const THEME_NAMES=Object.keys(FULL_THEMES);
+
+let es=null, state={agents:[],logs:[]}, selectedAgent=null, providers={};
+
+async function api(path,o={}){
+  const r=await fetch(path,{
+    headers:{'Content-Type':'application/json'},
+    ...o
+  });
+  return r.json();
+}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
 
-// ── Theme ──
+// ── 完整主题应用 ──
 function initTheme(){
-  const names=Object.keys(THEMES),cur=localStorage.getItem('baigong_theme')||'amber';
-  $('themePicker').innerHTML=names.map(n=>`<div class="theme-dot ${n===cur?'act':''}" data-theme="${n}" style="background:${THEMES[n]}" onclick="setTheme('${n}')" title="${n}"></div>`).join('');
+  const cur=localStorage.getItem('baigong_theme')||'amber';
+  $('themePicker').innerHTML=THEME_NAMES.map(n=>{
+    const t=FULL_THEMES[n];
+    return `<div class="theme-dot ${n===cur?'act':''}" data-theme="${n}" style="background:${t.dot}" onclick="setTheme('${n}')" title="${t.name}"></div>`;
+  }).join('');
   applyTheme(cur);
 }
-function setTheme(n){localStorage.setItem('baigong_theme',n);applyTheme(n);document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('act',d.dataset.theme===n));api('/api/theme',{method:'POST',body:JSON.stringify({accent:n})}).catch(()=>{})}
-function applyTheme(n){document.documentElement.style.setProperty('--accent',THEMES[n]||'#f59e0b');document.documentElement.style.setProperty('--accent2',THEMES[n+'2']||'#3b82f6')}
+function setTheme(n){
+  localStorage.setItem('baigong_theme',n);
+  applyTheme(n);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('act',d.dataset.theme===n));
+  api('/api/theme',{method:'POST',body:JSON.stringify({accent:n})}).catch(()=>{});
+  // highlight active
+}
+function applyTheme(n){
+  const t=FULL_THEMES[n]||FULL_THEMES.amber;
+  // 设 data-theme 属性（CSS 选择器用）
+  document.documentElement.setAttribute('data-theme', n);
+  // 同时直接设所有 CSS 变量
+  const root=document.documentElement;
+  root.style.setProperty('--bg',t.bg);
+  root.style.setProperty('--bg2',t.bg2);
+  root.style.setProperty('--bg3',t.bg3);
+  root.style.setProperty('--border',t.border);
+  root.style.setProperty('--text',t.text);
+  root.style.setProperty('--dim',t.dim);
+  root.style.setProperty('--accent',t.accent);
+  root.style.setProperty('--accent2',t.accent2);
+  // 计算 RGB 版本供 rgba() 使用
+  root.style.setProperty('--accent-rgb',hexToRgb(t.accent));
+}
+function hexToRgb(h){
+  const r=parseInt(h.slice(1,3),16),g=parseInt(h.slice(3,5),16),b=parseInt(h.slice(5,7),16);
+  return `${r},${g},${b}`;
+}
 
 // ── Init ──
 async function init(){
   initTheme();
   providers=await api('/api/providers')||{};
   const cfg=await api('/api/config');
-  if(cfg.llm&&cfg.llm.api_key){$('sysStat').textContent='已配置';if(cfg.agents&&cfg.agents.length)$('btnStart').click()}
-  else $('sysStat').textContent='⚠️ 未配置 API Key';
-  setInterval(fetchState,3000);await fetchState();
+  if(cfg&&cfg.llm&&cfg.llm.api_key){
+    $('sysStat').textContent='已配置';
+    if(cfg.agents&&cfg.agents.length>0){
+      // 自动尝试启动
+    }
+  } else {
+    $('sysStat').textContent='⚠️ 未配置 API Key';
+  }
+  setInterval(fetchState,3000);
+  await fetchState();
 }
 
 // ── Start/Stop ──
 $('btnStart').onclick=async function(){
-  this.disabled=true;$('sysStat').textContent='⏳ 启动中...';
+  this.disabled=true; $('sysStat').textContent='⏳ 启动中...';
   const r=await api('/api/start',{method:'POST'});
-  if(r.ok){this.style.display='none';$('btnStop').style.display='inline-block';$('sysStat').textContent='✅ 运行中';connectSSE()}
-  else{$('sysStat').textContent='❌ '+(r.error||'失败');this.disabled=false}
+  if(r.ok){
+    this.style.display='none';
+    $('btnStop').style.display='inline-block';
+    $('sysStat').textContent='✅ 运行中';
+    connectSSE();
+    await fetchState();
+  } else {
+    $('sysStat').textContent='❌ '+(r.error||'失败');
+    this.disabled=false;
+  }
 };
 $('btnStop').onclick=async function(){
   await api('/api/stop',{method:'POST'});
-  this.style.display='none';$('btnStart').style.display='inline-block';$('btnStart').disabled=false;
-  $('sysStat').textContent='⏹ 已停止';if(es){es.close();es=null}
+  this.style.display='none';
+  $('btnStart').style.display='inline-block';
+  $('btnStart').disabled=false;
+  $('sysStat').textContent='⏹ 已停止';
+  if(es){es.close();es=null}
 };
 
 // ── SSE + Poll ──
-function connectSSE(){if(es)es.close();es=new EventSource('/api/events');es.onmessage=function(e){try{render(JSON.parse(e.data))}catch(e){}};es.onerror=function(){};fetchState()}
-async function fetchState(){const s=await api('/api/state');if(s)render(s)}
+function connectSSE(){
+  if(es)es.close();
+  es=new EventSource('/api/events');
+  es.onmessage=function(e){
+    try{const d=JSON.parse(e.data);if(d)render(d)}catch(e){}
+  };
+  es.onerror=function(){};
+  fetchState();
+}
+async function fetchState(){
+  const s=await api('/api/state');
+  if(s&&s.agents)render(s);
+}
 
 // ── Render ──
 function render(s){
-  state=s;renderAgents(s);renderLogs(s);
-  if(selectedAgent&&s.agents){const a=s.agents.find(x=>x.id===selectedAgent.id);if(a){selectedAgent=a;renderDetail(a)}}
-  else renderOverview(s);
+  state=s;
+  renderAgents(s);
+  renderLogs(s);
+  if(selectedAgent&&s.agents){
+    const a=s.agents.find(x=>x.id===selectedAgent.id);
+    if(a){selectedAgent=a;renderDetail(a)} else renderOverview(s);
+  } else renderOverview(s);
 }
 function renderAgents(s){
-  const a=s.agents||[];$('agCnt').textContent=a.length;
-  $('agList').innerHTML=a.length?a.map(x=>`
-    <div class="ag-card ${selectedAgent&&selectedAgent.id===x.id?'sel':''}" onclick="selectAgent('${x.id}')">
-      <div class="ag-av-wrap"><div class="ag-av">🤖</div><span class="dot dot-${x.status||'idle'}"></span></div>
-      <div class="ag-info"><div class="ag-name">${esc(x.name)}</div><div class="ag-role2">${esc(x.role)} · ${x.model||'默认'}</div><div class="ag-action">${x.action||'等待任务...'}</div></div>
-    </div>`).join(''):'<div style="text-align:center;padding:20px;color:var(--dim);font-size:11px">暂无 Agent<br><span style="font-size:9px">启动后自动创建</span></div>';
-  const sel=$('taskAgent');sel.innerHTML='<option value="">自动分配</option>'+a.filter(x=>x.status==='idle').map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+  const a=s.agents||[];
+  $('agCnt').textContent=a.length;
+  $('agList').innerHTML=a.length?
+    a.map(x=>{
+      const sel=selectedAgent&&selectedAgent.id===x.id?'sel':'';
+      const color=x.provider&&providers[x.provider]?'':(x.color||'');
+      return `<div class="ag-card ${sel}" onclick="selectAgent('${x.id}')">
+        <div class="ag-av-wrap"><div class="ag-av">🤖</div><span class="dot dot-${x.status||'idle'}"></span></div>
+        <div class="ag-info"><div class="ag-name">${esc(x.name)}</div><div class="ag-role2">${esc(x.role||'')}</div><div class="ag-action">${x.action||'等待任务...'}</div></div>
+      </div>`;
+    }).join(''):
+    '<div style="text-align:center;padding:20px;color:var(--dim);font-size:11px">暂无 Agent<br><span style="font-size:9px">启动后自动创建默认 Agent</span></div>';
+  // 更新任务分配下拉
+  const sel=$('taskAgent');
+  sel.innerHTML='<option value="">自动分配</option>'+
+    a.filter(x=>x.status==='idle'||x.status==='done').map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
 }
 function renderLogs(s){
-  const l=s.logs||[];$('logCnt').textContent=l.length;
+  const l=s.logs||[];
+  $('logCnt').textContent=l.length;
   const el=$('logBox');
-  if(!l.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--dim)">等待系统启动...</div>';return}
-  el.innerHTML=l.slice(-200).map(x=>`<div class="l ${x.type||''}"><span class="l-t">${x.t||''}</span><span class="l-m">${x.msg||''}</span></div>`).join('');
+  if(!l.length){
+    el.innerHTML='<div style="padding:20px;text-align:center;color:var(--dim)">等待系统启动...</div>';
+    return;
+  }
+  el.innerHTML=l.slice(-200).map(x=>{
+    const tp=x.type===undefined?'':x.type;
+    return `<div class="l ${tp}"><span class="l-t">${esc(x.t||'')}</span><span class="l-m">${esc(x.msg||'')}</span></div>`;
+  }).join('');
   el.scrollTop=el.scrollHeight;
 }
 function renderOverview(s){
-  const a=s.agents||[];$('detailTitle').textContent='🏠 总览';
+  const a=s.agents||[];
+  $('detailTitle').textContent='🏠 总览';
+  // 点击标签回到总览
+  $('detailTitle').style.cursor='pointer';
+  $('detailTitle').onclick=function(){selectedAgent=null;renderOverview(state)};
   $('centerContent').innerHTML=`
     <div class="ov-grid">
       <div class="ov-card"><div class="ov-val">${a.length}</div><div class="ov-lbl">Agent</div></div>
-      <div class="ov-card"><div class="ov-val">${a.filter(x=>x.status==='idle').length}</div><div class="ov-lbl">空闲</div></div>
+      <div class="ov-card"><div class="ov-val">${a.filter(x=>x.status==='idle'||x.status==='done').length}</div><div class="ov-lbl">空闲</div></div>
       <div class="ov-card"><div class="ov-val">${a.filter(x=>x.status==='thinking'||x.status==='acting').length}</div><div class="ov-lbl">工作中</div></div>
       <div class="ov-card"><div class="ov-val">${(s.tasks||[]).length}</div><div class="ov-lbl">任务</div></div>
+      <div class="ov-card"><div class="ov-val">${a.reduce((s,x)=>(s+(x.tool_calls||0)),0)}</div><div class="ov-lbl">工具调用</div></div>
     </div>
     <div style="color:var(--dim);font-size:12px;text-align:center;padding:20px">点击左侧 Agent 查看或编辑配置<br>在顶部输入框下发任务</div>`;
 }
+// 不让总览标题被覆盖 onclick
+$('detailTitle').onclick=function(){selectedAgent=null;renderOverview(state)};
 
 // ── Select Agent ──
 async function selectAgent(id){
-  try{const a=await api('/api/agents/'+id);if(a&&a.id){selectedAgent=a;renderDetail(a);return}}catch(e){}
-  const a=(state.agents||[]).find(x=>x.id===id);if(a){selectedAgent=a;renderDetail(a)}
+  $('detailTitle').onclick=null;
+  // 优先从 API 获取最新数据
+  try{
+    const a=await api('/api/agents/'+id);
+    if(a&&a.id){selectedAgent=a;renderDetail(a);return}
+  }catch(e){}
+  // 降级用本地缓存
+  const a=(state.agents||[]).find(x=>x.id===id);
+  if(a){selectedAgent=a;renderDetail(a)}
 }
 
-// ── Detail/Edit ──
+// ── Detail / Edit ──
 function renderDetail(a){
-  $('detailTitle').textContent='✏️ '+a.name;
-  const tools=a.tools||[],allTools=Object.keys((state.tools||{})),pk=Object.keys(providers);
+  $('detailTitle').textContent='✏️ '+esc(a.name||a.id);
+  $('detailTitle').style.cursor='pointer';
+  $('detailTitle').onclick=function(){selectedAgent=null;renderOverview(state)};
+  const tools=a.tools||[];
+  const allTools=Object.keys((state.tools||{})).length?Object.keys(state.tools||{}):['web_search','web_extract','file_read','file_write','code_exec'];
+  const pks=Object.keys(providers);
   $('centerContent').innerHTML=`
     <div class="edit-s"><h3>📋 基本信息</h3>
       <div class="fg"><label>名字</label><input id="eName" value="${esc(a.name)}"></div>
-      <div class="fg"><label>角色描述</label><input id="eRole" value="${esc(a.role||'')}"></div></div>
+      <div class="fg"><label>角色描述</label><input id="eRole" value="${esc(a.role||'')}" placeholder="例如：研究员、编辑、QA"></div></div>
     <div class="edit-s"><h3>🧠 人设 / System Prompt</h3>
-      <div class="fg"><textarea id="ePrompt" rows="5">${esc(a.system_prompt||'')}</textarea></div></div>
+      <div class="fg"><textarea id="ePrompt" rows="4" placeholder="定义 Agent 的人格、行为规则、工作方式...">${esc(a.system_prompt||'')}</textarea></div></div>
     <div class="edit-s"><h3>🔌 LLM 配置</h3>
-      <div class="fg"><label>提供商</label><select id="eProvider" onchange="onProvChange()"><option value="">使用全局</option>${pk.map(k=>`<option value="${k}" ${a.provider===k?'selected':''}>${k}</option>`).join('')}</select></div>
-      <div class="fg"><label>模型</label><select id="eModel"><option value="">使用全局</option>${a.provider?(providers[a.provider]?.models||[]).map(m=>`<option value="${m}" ${a.model===m?'selected':''}>${m}</option>`).join(''):''}</select></div>
-      <div class="fg"><label>API Key</label><input id="eApiKey" type="password" value="${esc(a.api_key||'')}" placeholder="留空用全局"><div class="fg-hint">留空则使用全局配置</div></div>
-      <div class="fg"><label>API 地址</label><input id="eBaseUrl" value="${esc(a.base_url||'')}" placeholder="留空用默认"></div></div>
-    <div class="edit-s"><h3>🔧 工具</h3>
-      <div class="tool-grid">${(allTools.length?allTools:['web_search','web_extract','file_read','file_write','code_exec']).map(t=>`<label class="tool-chk ${tools.includes(t)?'chk':''}" onclick="this.classList.toggle('chk')"><input type="checkbox" ${tools.includes(t)?'checked':''} value="${t}"> ${t}</label>`).join('')}</div></div>
+      <div class="fg"><label>提供商</label>
+        <select id="eProvider" onchange="onProvChange()">
+          <option value="">使用全局</option>
+          ${pks.map(k=>`<option value="${k}" ${a.provider===k?'selected':''}>${k}</option>`).join('')}
+        </select></div>
+      <div class="fg"><label>模型</label>
+        <select id="eModel">
+          <option value="">使用全局</option>
+          ${a.provider&&providers[a.provider]?(providers[a.provider].models||[]).map(m=>`<option value="${m}" ${a.model===m?'selected':''}>${m}</option>`).join(''):''}
+        </select></div>
+      <div class="fg"><label>API Key</label>
+        <input id="eApiKey" type="password" value="${esc(a.api_key||'')}" placeholder="留空用全局"><div class="fg-hint">留空则使用全局配置</div></div>
+      <div class="fg"><label>API 地址</label>
+        <input id="eBaseUrl" value="${esc(a.base_url||'')}" placeholder="留空用默认"></div></div>
+    <div class="edit-s"><h3>🔧 工具（点击选中）</h3>
+      <div class="tool-grid">
+        ${allTools.map(t=>`<label class="tool-chk ${tools.includes(t)?'chk':''}" onclick="this.classList.toggle('chk')"><input type="checkbox" ${tools.includes(t)?'checked':''} value="${t}"> ${t}</label>`).join('')}
+      </div></div>
     <div class="edit-acts">
-      <button class="btn btn-red" onclick="if(confirm('删除这个 Agent？'))deleteAgent('${a.id}')">🗑 删除</button>
-      <button class="btn btn-pri" onclick="saveAgent('${a.id}')">💾 保存</button>
+      <button class="btn btn-red" onclick="if(confirm('确定删除这个 Agent？'))deleteAgent('${a.id}')">🗑 删除</button>
+      <button class="btn btn-pri" onclick="saveAgent('${a.id}')">💾 保存更改</button>
     </div>`;
+  // 如果选了 provider 但模型列表为空，自动填充
 }
-function onProvChange(){const p=$('eProvider').value;const sel=$('eModel');if(!p||!providers[p]){sel.innerHTML='<option value="">使用全局</option>';return}sel.innerHTML='<option value="">使用全局</option>'+providers[p].models.map(m=>`<option value="${m}">${m}</option>`).join('')}
+function onProvChange(){
+  const p=$('eProvider').value;
+  const sel=$('eModel');
+  if(!p||!providers[p]){sel.innerHTML='<option value="">使用全局</option>';return}
+  sel.innerHTML='<option value="">使用全局</option>'+
+    providers[p].models.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
 async function saveAgent(id){
-  const body={};const n=$('eName').value.trim();const r=$('eRole').value.trim();const p=$('ePrompt').value.trim();
-  if(n)body.name=n;if(r)body.role=r;if(p)body.system_prompt=p;
-  body.tools=[];document.querySelectorAll('#centerContent .tool-chk input:checked').forEach(cb=>body.tools.push(cb.value));
-  body.provider=$('eProvider').value||null;body.model=$('eModel').value||null;body.api_key=$('eApiKey').value||null;body.base_url=$('eBaseUrl').value||null;
-  const res=await api('/api/agents/'+id,{method:'PATCH',body:JSON.stringify(body)});
-  if(res.ok){$('sysStat').textContent='✅ 已保存';setTimeout(()=>{$('sysStat').textContent='✅ 运行中'},1500);await fetchState();selectAgent(id)}
-  else $('sysStat').textContent='❌ 保存失败';
+  const body={};
+  const n=$('eName').value.trim();
+  const r=$('eRole').value.trim();
+  const p=$('ePrompt').value.trim();
+  if(n)body.name=n;
+  if(r)body.role=r;
+  if(p)body.system_prompt=p;
+  body.tools=[];
+  document.querySelectorAll('#centerContent .tool-chk input:checked').forEach(cb=>body.tools.push(cb.value));
+  // LLM 配置：空字符串发空字符串，node 不传 undefined
+  const pv=$('eProvider').value;
+  body.provider=pv||null;
+  body.model=$('eModel').value||null;
+  body.api_key=$('eApiKey').value||null;
+  body.base_url=$('eBaseUrl').value||null;
+  $('sysStat').textContent='⏳ 保存中...';
+  try{
+    const res=await api('/api/agents/'+id,{method:'PATCH',body:JSON.stringify(body)});
+    if(res.ok){
+      $('sysStat').textContent='✅ 已保存';
+      await fetchState();
+      selectAgent(id);
+    } else {
+      $('sysStat').textContent='❌ 保存失败: '+(res.detail||res.error||'未知错误');
+    }
+  }catch(e){
+    $('sysStat').textContent='❌ 保存失败: '+e.message;
+  }
 }
 async function deleteAgent(id){
   const res=await api('/api/agents/'+id,{method:'DELETE'});
   if(res.ok){selectedAgent=null;renderOverview(state);await fetchState()}
+  else $('sysStat').textContent='❌ 删除失败';
 }
 
 // ── Task ──
 async function submitTask(){
-  const goal=$('taskInput').value.trim();if(!goal)return;
-  const agent=$('taskAgent').value;
-  await api('/api/task',{method:'POST',body:JSON.stringify({goal,agent_id:agent})});
+  const goal=$('taskInput').value.trim();
+  if(!goal)return;
   $('taskInput').value='';
+  const agent=$('taskAgent').value;
+  const res=await api('/api/task',{method:'POST',body:JSON.stringify({goal,agent_id:agent})});
+  if(res.ok)$('sysStat').textContent='✅ 任务已下发';
+  else $('sysStat').textContent='❌ '+(res.error||'任务下发失败');
 }
 
 // ── Update ──
-function showUpdate(){$('updateModal').classList.add('act');api('/api/update/status').then(r=>{$('upCurrent').textContent='v'+r.version;$('upMode').textContent=r.mode||(r.frozen?'App打包版':'源码版')}).catch(()=>{})}
+function showUpdate(){
+  $('updateModal').classList.add('act');
+  api('/api/update/status').then(r=>{
+    $('upCurrent').textContent='v'+r.version;
+    $('upMode').textContent=r.mode||(r.frozen?'App打包版':'源码版');
+  }).catch(()=>{});
+}
 function hideUpdate(){$('updateModal').classList.remove('act')}
 async function checkUpdate(){
-  $('upStatus').textContent='⏳ 检查中...';$('upBtnDownload').style.display='none';$('upPreview').textContent='';
+  $('upStatus').textContent='⏳ 检查中...';
+  $('upBtnDownload').style.display='none';
+  $('upPreview').textContent='';
   try{
     const r=await api('/api/update/check');
-    $('upCurrent').textContent='v'+r.current;$('upLatest').textContent='v'+r.latest;
-    if(r.has_update){$('upBtnDownload').style.display='inline-block';$('upStatus').textContent=`✅ 有新版本 v${r.latest} 可用！`;$('upPreview').textContent=(r.body||'').slice(0,300)}
-    else{$('upStatus').textContent=r.error?'⚠️ '+r.error:'✅ 已是最新版本'}
+    $('upCurrent').textContent='v'+r.current;
+    $('upLatest').textContent='v'+r.latest;
+    if(r.has_update){
+      $('upBtnDownload').style.display='inline-block';
+      $('upStatus').textContent='✅ 有新版本 v'+r.latest+' 可用！';
+      $('upPreview').textContent=(r.body||'').slice(0,300);
+    } else {
+      $('upStatus').textContent=r.error?'⚠️ '+r.error:'✅ 已是最新版本';
+    }
   }catch(e){$('upStatus').textContent='❌ 检查失败: '+e.message}
 }
 async function applyUpdate(){
-  $('upBtnDownload').disabled=true;$('upStatus').textContent='⏳ 正在下载更新...';
+  $('upBtnDownload').disabled=true;
+  $('upStatus').textContent='⏳ 正在下载更新...';
   try{
     const r=await api('/api/update/apply',{method:'POST'});
-    if(r.ok){$('upStatus').textContent=r.message;if(r.download_path)$('upPreview').textContent='下载完成，请关闭应用后打开 DMG 安装'}
-    else{$('upStatus').textContent='❌ '+r.error;$('upBtnDownload').disabled=false}
+    if(r.ok){
+      $('upStatus').textContent=r.message;
+      if(r.download_path)$('upPreview').textContent='下载完成，请关闭应用后打开 DMG 安装';
+    } else {
+      $('upStatus').textContent='❌ '+r.error;
+      $('upBtnDownload').disabled=false;
+    }
   }catch(e){$('upStatus').textContent='❌ '+e.message;$('upBtnDownload').disabled=false}
 }
 
