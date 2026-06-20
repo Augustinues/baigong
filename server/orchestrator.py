@@ -1,349 +1,421 @@
-"""百工编排器 — 使用真实 SDK 组件驱动 Agent 工作流"""
+"""百工真实编排器 — DeepSeek 驱动 Agent 思考-行动循环"""
 
 import asyncio
 import json
-import time
 import logging
-import re
+import os
+import time
+import uuid
 from typing import Optional
 
-from agent_sdk import (
-    ToolRegistry, TaskBoard, MessageBus,
-    MemoryType, BaseTool, ToolMetadata, ToolParam, ToolResult,
-)
-
+from agent_sdk import ToolRegistry, TaskBoard, TaskStatus
+from .config import config
 from .llm_client import DeepSeekClient
 
 logger = logging.getLogger("baigong.orchestrator")
 
 
-# ── 模拟工具（真实工具接口） ──
+class AgentInstance:
+    """一个真实的 Agent 实例"""
 
-class MockWebSearch(BaseTool):
-    @property
-    def metadata(self):
-        return ToolMetadata(
-            name="web_search", display_name="网络搜索",
-            description="搜索网络获取信息",
-            parameters=[
-                ToolParam(name="query", type="string", description="搜索关键词", required=True),
-                ToolParam(name="limit", type="integer", description="返回结果数", default=5),
-            ],
-            category="search",
-        )
-    async def execute(self, query: str, limit: int = 5) -> ToolResult:
-        logger.info(f"[web_search] '{query}' limit={limit}")
-        await asyncio.sleep(2)
-        return ToolResult(success=True, data={
-            "results": [
-                {"title": f"关于「{query}」的搜索结果1", "url": "https://ex.com/1"},
-                {"title": f"{query} 最新资讯", "url": "https://ex.com/2"},
-            ]
-        })
+    def __init__(self, agent_id: str, name: str, role: str, model: str,
+                 tools: list[str], system_prompt: str, llm: DeepSeekClient):
+        self.id = agent_id
+        self.name = name
+        self.role = role
+        self.model = model
+        self.tools = tools
+        self.system_prompt = system_prompt
+        self.llm = llm
 
-
-class MockKnowledgeWrite(BaseTool):
-    @property
-    def metadata(self):
-        return ToolMetadata(
-            name="kb_write", display_name="知识库写入",
-            description="将内容写入知识库",
-            parameters=[
-                ToolParam(name="title", type="string", description="标题", required=True),
-                ToolParam(name="content", type="string", description="内容", required=True),
-            ],
-            category="knowledge",
-        )
-    async def execute(self, title: str, content: str) -> ToolResult:
-        logger.info(f"[kb_write] '{title}' ({len(content)}字)")
-        await asyncio.sleep(1.5)
-        return ToolResult(success=True, data={"status": "written", "title": title, "size": len(content)})
-
-
-# ── 编排器 ──
-
-class AgentOrchestrator:
-    """驱动真实 SDK 组件的编排器"""
-
-    def __init__(self):
-        from agent_sdk import init_db
-        init_db()
-        self.board = TaskBoard()
-        self.bus = MessageBus()
-        self.running = False
-        self._task: Optional[asyncio.Task] = None
-
-        # 事件
-        self._update_event = asyncio.Event()
-        self._last_update = 0
-
-        # 收集的数据（供前端 SSE 读取）
-        self.logs: list[dict] = []
+        # 运行时状态
+        self.status = "idle"  # idle / thinking / acting / done / error
+        self.current_task = None
+        self.action = "等待任务..."
+        self.tool_calls = 0
+        self.tasks_done = 0
+        self.messages: list[dict] = []  # 思考日志
         self.memories: list[dict] = []
-        self.skills: list[str] = []
-        self.messages: list[dict] = []
-        self.speed = 1.0
 
-        # Agent 状态
-        self.agents = {
-            "manager": {"name": "张经理", "role": "manager", "icon": "👔", "color": "#f59e0b",
-                        "status": "idle", "action": "", "tool_calls": 0, "tasks_done": 0, "memory_nodes": 0},
-            "researcher": {"name": "王研究员", "role": "researcher", "icon": "🔍", "color": "#3b82f6",
-                           "status": "idle", "action": "", "tool_calls": 0, "tasks_done": 0, "memory_nodes": 0},
-            "editor": {"name": "李编辑", "role": "editor", "icon": "✏️", "color": "#10b981",
-                       "status": "idle", "action": "", "tool_calls": 0, "tasks_done": 0, "memory_nodes": 0},
-            "admin": {"name": "陈管理员", "role": "knowledge_admin", "icon": "📚", "color": "#8b5cf6",
-                      "status": "idle", "action": "", "tool_calls": 0, "tasks_done": 0, "memory_nodes": 0},
-            "qa": {"name": "赵质检", "role": "qa", "icon": "✅", "color": "#ef4444",
-                   "status": "idle", "action": "", "tool_calls": 0, "tasks_done": 0, "memory_nodes": 0},
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "role": self.role,
+            "model": self.model,
+            "tools": self.tools,
+            "status": self.status,
+            "action": self.action,
+            "tool_calls": self.tool_calls,
+            "tasks_done": self.tasks_done,
+            "messages": self.messages[-20:],
+            "memories": self.memories[-10:],
+            "system_prompt": self.system_prompt[:200],
         }
 
-        # 注册工具
-        ToolRegistry.register(MockWebSearch())
-        ToolRegistry.register(MockKnowledgeWrite())
 
-    # ── 日志辅助 ──
+class RealOrchestrator:
+    """真正的编排器，用 LLM 驱动 Agent"""
+
+    def __init__(self):
+        self.agents: dict[str, AgentInstance] = {}
+        self.board = TaskBoard()
+        self.llm_client: Optional[DeepSeekClient] = None
+        self.running = False
+
+        # SSE 事件
+        self._update_event = asyncio.Event()
+        self.global_logs: list[dict] = []
+        self.skills: list[str] = []
+
+    # ── 初始化 ──
+
+    async def initialize(self):
+        """初始化 LLM 客户端"""
+        api_key = config.get("llm.api_key", "")
+        if not api_key:
+            logger.warning("未配置 API Key")
+            return False
+
+        self.llm_client = DeepSeekClient(
+            api_key=api_key,
+            model=config.get("llm.model", "deepseek-chat"),
+            temperature=config.get("llm.temperature", 0.7),
+            max_tokens=config.get("llm.max_tokens", 4096),
+        )
+        return True
+
+    def load_agents_from_config(self):
+        """从配置加载 Agent"""
+        agents_config = config.get("agents", [])
+        for a in agents_config:
+            self._create_agent_instance(a)
+
+    def _create_agent_instance(self, agent_cfg: dict) -> AgentInstance:
+        agent_id = agent_cfg.get("id", str(uuid.uuid4())[:8])
+        agent = AgentInstance(
+            agent_id=agent_id,
+            name=agent_cfg.get("name", "无名Agent"),
+            role=agent_cfg.get("role", "worker"),
+            model=agent_cfg.get("model", config.get("llm.model", "deepseek-chat")),
+            tools=agent_cfg.get("tools", ["web_search", "file_read"]),
+            system_prompt=agent_cfg.get("system_prompt", "你是一个AI助手。"),
+            llm=self.llm_client,
+        )
+        self.agents[agent_id] = agent
+        return agent
 
     def _log(self, agent_id: str, msg: str, type: str = "action"):
+        a = self.agents.get(agent_id)
+        if not a:
+            return
         t = time.strftime("%H:%M:%S")
-        a = self.agents[agent_id]
-        self.logs.append({"t": t, "a": a["name"], "icon": a["icon"], "msg": msg, "type": type})
-        if len(self.logs) > 300:
-            self.logs = self.logs[-200:]
-        self._notify()
-
-    def _msg(self, from_id: str, to: str, text: str):
-        a = self.agents.get(from_id)
-        name = a["name"] if a else ("系统" if from_id == "System" else from_id)
-        icon = a["icon"] if a else "📨"
-        self.messages.append({"from": f"{icon} {name}", "to": to, "text": text})
-        if len(self.messages) > 50:
-            self.messages = self.messages[-40:]
-
-    def _mem(self, agent_id: str, concept: str, summary: str, pct: int = 50):
-        a = self.agents[agent_id]
-        self.memories.append({"agent": a["name"], "icon": a["icon"], "concept": concept, "summary": summary, "pct": pct})
-        if len(self.memories) > 20:
-            self.memories = self.memories[-15:]
-        a["memory_nodes"] += 1
-
-    def _skill(self, name: str):
-        if name not in self.skills:
-            self.skills.append(name)
-
-    def _set(self, agent_id: str, action: str, status: str = "working"):
-        self.agents[agent_id]["action"] = action
-        self.agents[agent_id]["status"] = status
+        self.global_logs.append({
+            "t": t, "agent": a.name, "role": a.role, "msg": msg, "type": type
+        })
+        a.messages.append({"t": t, "type": type, "msg": msg})
+        if len(self.global_logs) > 500:
+            self.global_logs = self.global_logs[-300:]
         self._notify()
 
     def _notify(self):
         self._update_event.set()
         self._update_event.clear()
 
-    async def _wait(self, sec: float):
-        await asyncio.sleep(sec / self.speed)
+    def _set_status(self, agent_id: str, status: str, action: str = ""):
+        a = self.agents.get(agent_id)
+        if not a:
+            return
+        a.status = status
+        if action:
+            a.action = action
+        self._notify()
 
-    # ── 获取任务目标中的关键词 ──
+    # ── Agent CRUD ──
 
-    def _keywords(self, goal: str) -> list[str]:
-        words = re.findall(r'[\u4e00-\u9fff\w]+', goal)
-        return [w for w in words if len(w) >= 2][:3] or ["目标"]
+    def create_agent(self, name: str, role: str, tools: list[str],
+                     system_prompt: str = "", model: str = "") -> dict:
+        agent_id = f"agent_{uuid.uuid4().hex[:6]}"
+        agent_cfg = {
+            "id": agent_id,
+            "name": name,
+            "role": role,
+            "tools": tools,
+            "system_prompt": system_prompt or f"你是{name}，你的角色是{role}。使用可用工具完成任务。",
+            "model": model or config.get("llm.model", "deepseek-chat"),
+        }
+        self._create_agent_instance(agent_cfg)
+        config.add_agent(agent_cfg)
+        self._log(agent_id, f"🆕 Agent 已创建: {name} ({role})", "action")
+        return agent_cfg
 
-    # ── 处理一个用户任务 ──
+    def delete_agent(self, agent_id: str):
+        if agent_id in self.agents:
+            name = self.agents[agent_id].name
+            del self.agents[agent_id]
+            config.remove_agent(agent_id)
+            self._log(agent_id, f"🗑️ Agent 已删除: {name}", "action")
 
-    async def process_task(self, goal: str) -> str:
-        """处理用户下发的一个任务。返回根任务 ID"""
-        try:
-            return await self._process_inner(goal)
-        except Exception as e:
-            logger.exception(f"process_task 失败: {e}")
-            self._log("manager", f"❌ 任务处理失败: {str(e)[:50]}", "error")
-            raise
+    def update_agent(self, agent_id: str, updates: dict):
+        if agent_id in self.agents:
+            a = self.agents[agent_id]
+            for k, v in updates.items():
+                if hasattr(a, k):
+                    setattr(a, k, v)
+            config.update_agent(agent_id, updates)
+            self._log(agent_id, f"✏️ Agent 已更新", "action")
 
-    async def _process_inner(self, goal: str) -> str:
-        if not self.running:
-            self.running = True
-            self._log("manager", "🏮 百工系统就绪", "thought")
-            self._msg("System", "All", "百工 Agent 集群启动")
+    # ── 任务处理 ──
 
-        kw = self._keywords(goal)
-        keyword = kw[0]
+    async def process_task(self, goal: str, agent_id: str = ""):
+        """用真实 LLM 驱动 Agent 完成任务"""
+        if not self.llm_client:
+            if not await self.initialize():
+                self._log("system", "❌ API Key 未配置，无法执行任务", "error")
+                return
 
-        # 重置 Agent 状态（保留统计数据）
-        for aid in self.agents:
-            self.agents[aid]["status"] = "idle"
-            self.agents[aid]["action"] = ""
-            if aid == "manager":
-                self.agents[aid]["status"] = "idle"
+        # 找执行 Agent
+        if not agent_id or agent_id not in self.agents:
+            # 用第一个空闲的 Agent
+            agent_id = next((aid for aid, a in self.agents.items() if a.status == "idle"),
+                            next(iter(self.agents), None))
+        if not agent_id:
+            self._log("system", "❌ 没有可用 Agent", "error")
+            return
 
-        # ── 创建根任务 ──
-        root = self.board.create_task(goal=goal, creator="ceo", assignee="manager")
-        self._log("manager", f"📋 收到新任务: {goal}", "action")
-        self._msg("CEO", "张经理", f"[TASK_ASSIGN] {goal}")
-        await self._wait(0.8)
+        agent = self.agents[agent_id]
+        agent.current_task = goal
+        self._set_status(agent_id, "thinking", f"思考任务: {goal[:40]}...")
 
-        # ── 主管拆解 ──
-        self._set("manager", "拆解任务中...")
-        self._log("manager", "[思考] 分析任务目标 → 自动拆解为 3 个子任务", "thought")
-        sub1 = self.board.create_task(
-            goal=f"搜索关于「{keyword}」的资料", creator="manager",
-            assignee="researcher", parent_task_id=root.id,
-        )
-        sub2 = self.board.create_task(
-            goal=f"整理和分类「{keyword}」相关资料", creator="manager",
-            assignee="editor", parent_task_id=root.id,
-        )
-        sub3 = self.board.create_task(
-            goal=f"将「{keyword}」资料写入知识库", creator="manager",
-            assignee="admin", parent_task_id=root.id,
-        )
-        self._log("manager", "[行动] 创建子任务: 搜索 → 王研究员", "action")
-        self._log("manager", "[行动] 创建子任务: 整理 → 李编辑", "action")
-        self._log("manager", "[行动] 创建子任务: 入库 → 陈管理员", "action")
-        self._msg("manager", "王研究员", f"[TASK_ASSIGN] 搜索「{keyword}」资料")
-        self._msg("manager", "李编辑", f"[TASK_ASSIGN] 整理「{keyword}」资料")
-        self._msg("manager", "陈管理员", f"[TASK_ASSIGN] 入库「{keyword}」资料")
-        root.log("拆解完成", "manager")
-        self.board.update_task(root.id, progress=0.1)
-        self._set("manager", "等待子任务", "waiting")
-        await self._wait(0.5)
+        # 创建任务
+        task = self.board.create_task(goal=goal, creator="user", assignee=agent.name)
+        self._log(agent_id, f"📋 收到任务: {goal}", "action")
 
-        # ── 研究员搜索 ──
-        self._set("researcher", "感知到新任务...")
-        self._log("researcher", "[感知] 看板检测到新任务 → 角色匹配", "thought")
-        await self._wait(0.4)
-        self._set("researcher", "领取任务")
-        self._log("researcher", "[决策] 权限匹配 → 主动领取搜索任务", "action")
-        self._msg("researcher", "张经理", "[STATUS_UPDATE] 已领取，开始搜索")
-        await self._wait(0.3)
-        self._set("researcher", "搜索中...")
-        self._log("researcher", f'🔧 调用 web_search(query="{keyword} 鉴别方法", limit=5)', "action")
-        self.agents["researcher"]["tool_calls"] += 1
-        # 执行真实工具
-        tool = ToolRegistry.get("web_search")
-        if tool:
-            await tool.execute(query=f"{keyword} 鉴别方法", limit=5)
-        await self._wait(0.8)
-        self._log("researcher", f"[结果] 找到多条关于「{keyword}」的资料", "result")
-        self._log("researcher", f'🔧 调用 web_search(query="{keyword} 最新资讯", limit=5)', "action")
-        self.agents["researcher"]["tool_calls"] += 1
-        if tool:
-            await tool.execute(query=f"{keyword} 最新资讯", limit=5)
-        await self._wait(0.8)
-        self._log("researcher", "[结果] 搜索完成，收集到有效资料", "result")
-        # 记忆巩固
-        self._log("researcher", f"[记忆巩固] 学习: 「{keyword}」搜索关键词策略", "memory")
-        self._mem("researcher", f"{keyword}搜索策略", f"关键词「{keyword} 鉴别方法」「{keyword} 最新资讯」", 65)
-        await self._wait(0.3)
-        self._log("researcher", "[行动] 结果写回看板，标记完成", "action")
-        self.board.complete_task(sub1.id, "资料已搜索完成")
-        self.board.update_task(root.id, progress=0.35)
-        self._set("researcher", "✅ 完成", "done")
-        self.agents["researcher"]["tasks_done"] += 1
-        self._msg("researcher", "张经理", "[TASK_RESULT] 搜索完成")
-        await self._wait(0.4)
+        # 构建系统 Prompt
+        tools_desc = "\n".join([
+            f"- {t.metadata.name}: {t.metadata.description}"
+            for t in ToolRegistry.list_all()
+            if t.metadata.name in agent.tools
+        ])
+        sys_prompt = f"""{agent.system_prompt}
 
-        # ── 编辑整理 ──
-        self._set("editor", "感知中...")
-        self._log("editor", "[感知] 研究员完成任务，新任务可领取", "thought")
-        await self._wait(0.3)
-        self._set("editor", "整理中...")
-        self._log("editor", "[行动] 去重: 筛选有效内容", "action")
-        await self._wait(0.8)
-        self._log("editor", "[行动] 分类: 按主题整理资料", "action")
-        await self._wait(0.8)
-        self._log("editor", f"[结果] 整理完成，资料已标准化分类", "result")
-        self.board.complete_task(sub2.id, "资料已整理分类")
-        self.board.update_task(root.id, progress=0.65)
-        self._set("editor", "✅ 完成", "done")
-        self.agents["editor"]["tasks_done"] += 1
-        self._msg("editor", "张经理", "[TASK_RESULT] 整理完毕")
-        await self._wait(0.4)
+你是一个 AI Agent，你的名字是「{agent.name}」，角色是「{agent.role}」。
 
-        # ── 管理员入库 ──
-        self._set("admin", "感知中...")
-        self._log("admin", "[感知] 编辑完成 → 可取新任务", "thought")
-        await self._wait(0.3)
-        self._set("admin", "入库中...")
-        self._log("admin", f'🔧 调用 kb_write(title="{keyword}资料汇总", content=...)', "action")
-        self.agents["admin"]["tool_calls"] += 1
-        tool = ToolRegistry.get("kb_write")
-        if tool:
-            await tool.execute(title=f"{keyword}资料汇总", content=f"# {keyword}资料\n\n搜索整理后的相关资料...")
-        await self._wait(0.8)
-        self._log("admin", "[结果] 写入成功", "result")
-        self.board.complete_task(sub3.id, "资料已入库")
-        self.board.update_task(root.id, progress=0.85)
-        self._set("admin", "✅ 完成", "done")
-        self.agents["admin"]["tasks_done"] += 1
-        self._msg("admin", "张经理", "[TASK_RESULT] 入库完成")
-        await self._wait(0.4)
+可用的工具：
+{tools_desc}
 
-        # ── 质检 ──
-        self._set("qa", "质检中...")
-        self._log("qa", "[感知] 管理员完成，开始质量检查", "thought")
-        await self._wait(0.6)
-        self._log("qa", "[结果] 质检通过，内容格式合格", "result")
-        self._set("qa", "✅ 通过", "done")
-        self.agents["qa"]["tasks_done"] += 1
-        self._msg("qa", "张经理", "[TASK_RESULT] 质检通过")
-        await self._wait(0.3)
+工作流程：
+1. 思考（Think）— 分析当前任务，决定下一步做什么
+2. 行动（Act）— 调用一个工具来执行
+3. 观察（Observe）— 查看工具返回的结果
+4. 重复 1-3 直到任务完成
 
-        # ── 主管收尾 ──
-        self._set("manager", "汇总中...", "working")
-        self._log("manager", "[思考] 所有子任务完成，汇总报告", "thought")
-        await self._wait(0.8)
-        self._log("manager", f'[结果] 📊 "{goal}" 全部完成 ✅', "result")
-        self.board.complete_task(root.id, "全部完成")
-        self.board.update_task(root.id, progress=1.0)
-        self._set("manager", "🎉 完成", "done")
-        self.agents["manager"]["tasks_done"] += 1
-        self._msg("manager", "CEO", "[TASK_RESULT] 🎉 全部任务完成")
+输出格式：
+每次输出一个 JSON 对象：
+```json
+{{"thought": "你的思考过程", "action": "工具名", "params": {{"参数名": "参数值"}}}}
+```
+如果任务完成，输出：
+```json
+{{"thought": "任务已完成", "action": "complete", "result": "任务结果总结"}}
+```"""
 
-        # ── 技能挖掘 ──
-        self._log("manager", f'[Skill挖掘] 检测到类"搜索"模式重复 → 形成 Skill', "skill")
-        self._skill(f"{keyword}资料搜索")
-        self._msg("System", "All", "[NOTIFICATION] 新 Skill 自动形成")
+        # 思考-行动循环（最多 10 步）
+        max_steps = 10
+        messages = [
+            {"role": "system", "content": sys_prompt},
+            {"role": "user", "content": f"请完成这个任务：{goal}"},
+        ]
 
-        # 记忆巩固
-        self._mem("researcher", f"{keyword}知识", f"关于「{keyword}」的知识体系已巩固", 75)
-        self._log("researcher", f'[记忆巩固] 「{keyword}」相关知识已写入长期记忆树', "memory")
+        for step in range(max_steps):
+            self._set_status(agent_id, "thinking", f"第{step+1}步思考中...")
+            self._log(agent_id, f"[思考] 第{step+1}/{max_steps}轮思考", "thought")
 
-        return root.id
+            # 调用 LLM
+            try:
+                response = await self.llm_client.chat(messages, model=agent.model)
+            except Exception as e:
+                self._log(agent_id, f"❌ LLM 调用失败: {str(e)[:80]}", "error")
+                self._set_status(agent_id, "error", "LLM 错误")
+                break
 
-    # ── 获取状态 ──
+            # 解析响应
+            content = response.strip()
+            self._log(agent_id, f"[LLM] {content[:150]}...", "thought")
+
+            # 提取 JSON
+            json_match = self._extract_json(content)
+            if not json_match:
+                self._log(agent_id, f"⚠️ LLM 输出格式异常，尝试继续", "error")
+                messages.append({"role": "assistant", "content": content})
+                continue
+
+            thought = json_match.get("thought", "")
+            action = json_match.get("action", "")
+            params = json_match.get("params", {})
+            result_text = json_match.get("result", "")
+
+            self._log(agent_id, f"🧠 {thought}", "thought")
+
+            # 完成
+            if action == "complete":
+                self._set_status(agent_id, "done", f"✅ 完成: {result_text[:50]}")
+                self._log(agent_id, f"✅ 任务完成: {result_text}", "result")
+                self.board.complete_task(task.id, result_text or "完成")
+                agent.tasks_done += 1
+
+                # 记忆巩固
+                self._consolidate_memory(agent_id, goal, result_text)
+                break
+
+            # 执行工具
+            tool = ToolRegistry.get(action)
+            if not tool:
+                self._log(agent_id, f"❌ 未知工具: {action}", "error")
+                messages.append({
+                    "role": "user",
+                    "content": f"工具 `{action}` 不存在。可用工具: {', '.join(agent.tools)}"
+                })
+                continue
+
+            if action not in agent.tools:
+                self._log(agent_id, f"❌ 无权使用工具: {action}", "error")
+                messages.append({
+                    "role": "user",
+                    "content": f"你没有权限使用工具 `{action}`。你的工具: {', '.join(agent.tools)}"
+                })
+                continue
+
+            self._set_status(agent_id, "acting", f"🔧 调用 {action}...")
+            self._log(agent_id, f"🔧 调用工具: {action}({json.dumps(params, ensure_ascii=False)[:100]})", "action")
+            agent.tool_calls += 1
+
+            try:
+                result = await tool.execute(**params)
+            except Exception as e:
+                self._log(agent_id, f"❌ 工具执行失败: {str(e)[:100]}", "error")
+                messages.append({
+                    "role": "user",
+                    "content": f"工具 `{action}` 执行失败: {str(e)[:200]}"
+                })
+                continue
+
+            # 记录结果
+            result_str = json.dumps({
+                "success": result.success,
+                "data": result.data,
+                "error": result.error,
+            }, ensure_ascii=False)[:500]
+            self._log(agent_id, f"[结果] {result_str[:150]}...", "result")
+
+            # 继续对话
+            messages.append({"role": "assistant", "content": content})
+            messages.append({
+                "role": "user",
+                "content": f"工具 `{action}` 返回结果：\n{result_str}"
+            })
+
+            # 更新进度
+            progress = (step + 1) / max_steps
+            self.board.update_task(task.id, progress=min(progress, 0.95))
+
+        else:
+            # 超步数
+            self._set_status(agent_id, "done", "⚠️ 达到最大思考步数")
+            self._log(agent_id, "⚠️ 达到最大思考步数，任务未完成", "error")
+
+        # 重置状态
+        agent.current_task = None
+        self._set_status(agent_id, "idle", "等待任务...")
+
+    def _extract_json(self, text: str) -> Optional[dict]:
+        """从 LLM 输出中提取 JSON"""
+        import re
+        # 先找 ```json ... ```
+        match = re.search(r'```(?:json)?\s*(\{.*?\})\s*```', text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(1))
+            except json.JSONDecodeError:
+                pass
+        # 直接找 {...}
+        match = re.search(r'\{[^{}]*\}', text, re.DOTALL)
+        if match:
+            try:
+                return json.loads(match.group(0))
+            except json.JSONDecodeError:
+                pass
+        return None
+
+    def _consolidate_memory(self, agent_id: str, task: str, result: str):
+        """记忆巩固"""
+        agent = self.agents.get(agent_id)
+        if not agent:
+            return
+        summary = f"完成了任务「{task}」: {result[:100]}"
+        agent.memories.append({
+            "type": "task",
+            "task": task,
+            "result": result[:200],
+            "time": time.strftime("%H:%M:%S"),
+        })
+        self._log(agent_id, f"🧠 [记忆巩固] {summary[:80]}", "memory")
+
+    # ── 系统数据查询 ──
+
+    def get_system_data(self, target: str) -> dict:
+        if target == "agents":
+            return {aid: a.to_dict() for aid, a in self.agents.items()}
+        elif target == "tasks":
+            return {
+                "pending": [{"id": t.id, "goal": t.goal, "status": t.status.value if hasattr(t.status, 'value') else str(t.status)} for t in self.board.get_pending_tasks(50)],
+                "active": [{"id": t.id, "goal": t.goal, "status": t.status.value if hasattr(t.status, 'value') else str(t.status)} for t in self.board.get_active_tasks(50)],
+            }
+        elif target == "tools":
+            return {
+                t.metadata.name: {
+                    "name": t.metadata.name,
+                    "display_name": t.metadata.display_name,
+                    "description": t.metadata.description,
+                    "category": t.metadata.category,
+                }
+                for t in ToolRegistry.list_all()
+            }
+        elif target == "skills":
+            return {"skills": self.skills}
+        elif target == "config":
+            return config.load()
+        return {}
 
     def get_state(self) -> dict:
         tasks = []
-        for t in self.board.get_pending_tasks(20):
-            tasks.append({"id": t.id, "goal": t.goal, "status": t.status.value, "assignee": t.assignee, "progress": t.progress})
-        for t in self.board.get_active_tasks(20):
-            tasks.append({"id": t.id, "goal": t.goal, "status": t.status.value, "assignee": t.assignee, "progress": t.progress})
-        # 已完成的任务不重复获取
+        for t in self.board.get_pending_tasks(50):
+            tasks.append(t.to_dict() if hasattr(t, 'to_dict') else {"goal": t.goal, "status": str(t.status)})
+        for t in self.board.get_active_tasks(50):
+            tasks.append(t.to_dict() if hasattr(t, 'to_dict') else {"goal": t.goal, "status": str(t.status)})
+
         return {
             "running": self.running,
-            "agents": [dict(a) for a in self.agents.values()],
+            "agents": [a.to_dict() for a in self.agents.values()],
             "tasks": tasks,
-            "logs": self.logs[-80:] if self.logs else [],
-            "memories": list(reversed(self.memories)) if self.memories else [],
+            "logs": self.global_logs[-100:],
+            "tools": {
+                t.metadata.name: {
+                    "name": t.metadata.name,
+                    "display_name": t.metadata.display_name,
+                    "description": t.metadata.description,
+                    "category": t.metadata.category,
+                }
+                for t in ToolRegistry.list_all()
+            },
             "skills": [{"name": s} for s in self.skills],
-            "messages": self.messages[-25:] if self.messages else [],
         }
 
     async def reset(self):
         self.running = False
-        if self._task and not self._task.done():
-            self._task.cancel()
-            try:
-                await self._task
-            except (asyncio.CancelledError, Exception):
-                pass
-        self._task = None
-        self.logs.clear()
-        self.memories.clear()
+        for agent in self.agents.values():
+            agent.status = "idle"
+            agent.action = ""
+            agent.current_task = None
+        self.global_logs.clear()
         self.skills.clear()
-        self.messages.clear()
-        for a in self.agents.values():
-            a["status"] = "idle"
-            a["action"] = ""
-            # 保留统计数据

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>百工 Baigong — 初始配置</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.c{max-width:560px;width:90%;background:#1a1d27;border:1px solid #2a2e3a;border-radius:12px;padding:40px;animation:fade .3s}
+@keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+h1{font-size:22px;text-align:center;margin-bottom:4px}
+h1 span{color:#f59e0b}
+.sub{text-align:center;color:#7c8294;font-size:13px;margin-bottom:28px}
+.step{display:flex;gap:6px;justify-content:center;margin-bottom:28px}
+.st{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;background:#232734;color:#7c8294;transition:.2s}
+.st.act{background:#f59e0b;color:#1a1d27}.st.dn{background:#10b981;color:#fff}
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:#cbd5e1}
+input,select,textarea{width:100%;padding:10px 12px;background:#232734;border:1px solid #2a2e3a;border-radius:6px;color:#e2e8f0;font-size:14px;outline:none;transition:.15s;font-family:inherit}
+input:focus,select:focus,textarea:focus{border-color:#f59e0b}
+input::placeholder{color:#4a4f5e}
+.hint{font-size:11px;color:#7c8294;margin-top:4px}
+.form-group{margin-bottom:16px}
+.btn{padding:10px 20px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;width:100%}
+.btn-pri{background:#f59e0b;color:#1a1d27}.btn-pri:hover{background:#d48a08}
+.btn-pri:disabled{opacity:.4;cursor:not-allowed}
+.btn-sec{background:#232734;color:#e2e8f0;border:1px solid #2a2e3a}.btn-sec:hover{background:#2a2e3a}
+.stat{display:none;padding:12px;border-radius:6px;font-size:13px;margin-top:12px;white-space:pre-wrap}
+.stat.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#10b981;display:block}
+.stat.er{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;display:block}
+.mt{display:none;margin-top:16px}
+</style>
+</head>
+<body>
+<div class="c">
+<div class="step" id="stepInd">
+  <span class="st act">1</span>
+  <span class="st">2</span>
+  <span class="st">3</span>
+  <span class="st">4</span>
+</div>
+<h1>🏮 百工 <span>Baigong</span></h1>
+<p class="sub">首次使用，先配置一下</p>
+
+<!-- Step 1: API Key -->
+<div class="pg" id="pg1">
+  <div class="form-group">
+    <label>🔑 DeepSeek API Key</label>
+    <input id="apiKey" type="password" placeholder="sk-..." autofocus>
+    <div class="hint">申请地址：platform.deepseek.com → API Keys</div>
+  </div>
+  <div class="form-group">
+    <label>🌐 API 地址</label>
+    <input id="apiUrl" value="https://api.deepseek.com/v1" placeholder="https://api.deepseek.com/v1">
+  </div>
+  <div class="stat" id="stat1"></div>
+  <button class="btn btn-pri" onclick="next1()">下一步</button>
+</div>
+
+<!-- Step 2: Model -->
+<div class="pg" id="pg2" style="display:none">
+  <div class="form-group">
+    <label>🤖 默认模型</label>
+    <select id="model">
+      <option value="deepseek-chat">deepseek-chat（推荐）</option>
+      <option value="deepseek-reasoner">deepseek-reasoner</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>🎯 温度（0-2，越高越有创造力）</label>
+    <input id="temperature" type="number" value="0.7" min="0" max="2" step="0.1">
+  </div>
+  <div class="form-group">
+    <label>📝 最大 Token</label>
+    <input id="maxTokens" type="number" value="4096" min="1024" max="32768" step="1024">
+  </div>
+  <button class="btn btn-sec" onclick="prev(1)" style="margin-bottom:8px">上一步</button>
+  <button class="btn btn-pri" onclick="next2()">下一步</button>
+</div>
+
+<!-- Step 3: Create Agent -->
+<div class="pg" id="pg3" style="display:none">
+  <div class="form-group">
+    <label>🤖 创建你的第一个 Agent</label>
+    <input id="agentName" value="助手" placeholder="Agent 名字">
+  </div>
+  <div class="form-group">
+    <label>📋 角色描述</label>
+    <input id="agentRole" value="通用助手" placeholder="例如：研究员、编辑、程序员">
+  </div>
+  <div class="form-group">
+    <label>🔧 工具</label>
+    <div style="display:flex;flex-wrap:wrap;gap:6px">
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> web_search</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> web_extract</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> file_read</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> file_write</label>
+      <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> code_exec</label>
+    </div>
+    <div class="hint">启动后可在管理面板中修改</div>
+  </div>
+  <button class="btn btn-sec" onclick="prev(2)" style="margin-bottom:8px">上一步</button>
+  <button class="btn btn-pri" onclick="next3()">下一步</button>
+</div>
+
+<!-- Step 4: Done -->
+<div class="pg" id="pg4" style="display:none;text-align:center">
+  <div style="font-size:48px;margin-bottom:12px">🎉</div>
+  <h2 style="margin-bottom:8px">配置完成！</h2>
+  <p class="sub" style="margin-bottom:20px">正在初始化系统...</p>
+  <div class="stat" id="stat4"></div>
+  <button class="btn btn-pri" id="finishBtn" style="display:none" onclick="finish()">进入百工 →</button>
+</div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const steps=[1,2,3,4];
+let cur=1;
+
+function showStep(n){
+  document.querySelectorAll('.pg').forEach(e=>e.style.display='none');
+  const el=$(`pg${n}`);
+  if(el)el.style.display='block';
+  document.querySelectorAll('.st').forEach((e,i)=>{
+    e.classList.remove('act','dn');
+    if(i+1===n)e.classList.add('act');
+    else if(i+1<n)e.classList.add('dn');
+  });
+  cur=n;
+}
+
+async function next1(){
+  const key=$('apiKey').value.trim();
+  if(!key){$('stat1').className='stat er';$('stat1').textContent='请输入 API Key';return}
+  $('stat1').className='stat ok';$('stat1').textContent='⏳ 验证中...';
+  try{
+    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.api_key',value:key})});
+    const d=await r.json();
+    if(d.ok){
+      await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.base_url',value:$('apiUrl').value.trim()||'https://api.deepseek.com/v1'})});
+      $('stat1').className='stat ok';$('stat1').textContent='✅ API Key 已保存';
+      showStep(2);
+    }else{$('stat1').className='stat er';$('stat1').textContent='保存失败: '+JSON.stringify(d)}
+  }catch(e){$('stat1').className='stat er';$('stat1').textContent='保存失败: '+e.message}
+}
+async function next2(){
+  await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.model',value:$('model').value})});
+  await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.temperature',value:$('temperature').value})});
+  await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.max_tokens',value:$('maxTokens').value})});
+  showStep(3);
+}
+async function next3(){
+  const name=$('agentName').value.trim()||'助手';
+  const role=$('agentRole').value.trim()||'通用助手';
+  await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    name,role,tools:['web_search','web_extract','file_read','file_write','code_exec'],
+    system_prompt:`你是${name}，你的角色是${role}。使用可用工具完成任务。`
+  })});
+  showStep(4);
+  // 初始化
+  $('stat4').className='stat ok';$('stat4').textContent='⏳ 启动系统中...';
+  try{
+    const r=await fetch('/api/start',{method:'POST'});
+    const d=await r.json();
+    if(d.ok){
+      $('stat4').textContent='✅ 系统就绪！';
+      $('finishBtn').style.display='block';
+    }else{$('stat4').className='stat er';$('stat4').textContent='启动失败: '+(d.error||'')}
+  }catch(e){$('stat4').className='stat er';$('stat4').textContent='启动失败: '+e.message}
+}
+function prev(n){showStep(n)}
+function finish(){window.location.reload()}
+</script>
+</body>
+</html>

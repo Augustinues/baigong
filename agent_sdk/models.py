@@ -45,7 +45,7 @@ class ToolParam:
     description: str
     required: bool = False
     default: Any = None
-    enum: list[str] | None = None
+    enum: Optional[list[str]] = None
 
 
 @dataclass

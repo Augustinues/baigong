@@ -31,12 +31,12 @@ def build():
 
     print("🏗️  使用 PyInstaller 构建 .app...")
     subprocess.run([
-        sys.executable, "-m", "PyInstaller",
+        "/Users/geogre/.browser-use-env/bin/python3", "-m", "PyInstaller",
         "--name", APP_NAME,
         "--onedir",
         "--windowed",
         "--icon", "baigong.icns",
-        "--add-data", "docs/index.html:docs",
+        "--add-data", "docs:docs",
         "--hidden-import", "server.main",
         "--hidden-import", "agent_sdk",
         "--hidden-import", "uvicorn.logging",
