@@ -5,7 +5,7 @@
 拥有自动生长的记忆树，技能会从经验中自然形成。
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from .models import (
     AgentConfig, AgentStatus, RoleDefinition, ModelConfig,

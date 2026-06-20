@@ -52,7 +52,7 @@
 
 **下载地址：** ↓
 
-> [⬇️ 下载 Baigong.dmg (40MB)](https://github.com/Augustinues/baigong/releases/download/v0.1.0/Baigong.dmg)
+> [⬇️ 下载 Baigong.dmg (40MB)](https://github.com/Augustinues/baigong/releases/download/v0.2.0/Baigong.dmg)
 
 打开后：
 1. 原生 macOS 窗口出现，内嵌百工控制台
