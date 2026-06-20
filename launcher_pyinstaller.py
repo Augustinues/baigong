@@ -1,8 +1,5 @@
 """
-百工 Baigong — macOS 原生应用入口
-
-双击 .app 打开一个原生 macOS 窗口，内嵌百工 Agent 系统控制台。
-不走浏览器，不依赖终端，全部在窗口内完成。
+百工 Baigong — macOS 原生应用入口 (PyInstaller 版)
 """
 
 import os
@@ -10,19 +7,10 @@ import sys
 import threading
 import logging
 
-# 确保能找到 Python 包（在 .app 的 Resources/lib/ 里）
-HERE = os.path.dirname(os.path.abspath(__file__))
-LIB = os.path.join(HERE, "lib")
-if os.path.isdir(LIB) and LIB not in sys.path:
-    sys.path.insert(0, LIB)
-
-# 确保能找到 agent_sdk 和 server
-PROJECT = os.path.dirname(HERE)  # .app 里是 Resources/，项目根是上一层
-if PROJECT not in sys.path:
-    sys.path.insert(0, PROJECT)
-
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("baigong")
+
+HERE = os.path.dirname(os.path.abspath(__file__))
 
 
 def start_server():
@@ -41,7 +29,6 @@ def start_server():
 
 
 def main():
-    # 后台启动服务器
     t = threading.Thread(target=start_server, daemon=True)
     t.start()
 
