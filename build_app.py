@@ -8,14 +8,14 @@
 import os
 import shutil
 import subprocess
-import sys
+import plistlib
 
 APP_NAME = "百工 Baigong"
 HERE = os.path.dirname(os.path.abspath(__file__))
 DIST = os.path.join(HERE, "dist")
 APP_PATH = os.path.join(DIST, f"{APP_NAME}.app")
 DMG_PATH = os.path.join(DIST, f"{APP_NAME}.dmg")
-SPEC = os.path.join(HERE, f"{APP_NAME}.spec")
+PLIST_PATH = os.path.join(APP_PATH, "Contents", "Info.plist")
 
 
 def build():
@@ -49,6 +49,36 @@ def build():
         "--collect-all", "webview",
         "launcher_pyinstaller.py",
     ], check=True, cwd=HERE)
+
+    # 修复 Info.plist
+    print("🔧 修复 Info.plist...")
+    with open(PLIST_PATH, "rb") as f:
+        plist = plistlib.load(f)
+
+    # 1. 确保 bundle identifier 正确（启动台显示）
+    plist["CFBundleIdentifier"] = "com.baigong.agent"
+    plist["CFBundleDisplayName"] = "百工 Baigong"
+    plist["CFBundleName"] = "百工 Baigong"
+    plist["CFBundleShortVersionString"] = "0.2.3"
+    plist["CFBundleVersion"] = "0.2.3"
+
+    # 2. 添加 NSAllowsLocalNetworking — WKWebView 需要才能连 localhost HTTP
+    if "NSAppTransportSecurity" not in plist:
+        plist["NSAppTransportSecurity"] = {}
+    plist["NSAppTransportSecurity"]["NSAllowsLocalNetworking"] = True
+
+    with open(PLIST_PATH, "wb") as f:
+        plistlib.dump(plist, f)
+    print("  ✅ Info.plist 已更新")
+
+    # 3. 重新签名（修改 Info.plist 后会破坏签名）
+    print("🔏 重新签名...")
+    subprocess.run([
+        "codesign", "--force", "--deep", "--sign", "-",
+        "--preserve-metadata=identifier,entitlements",
+        APP_PATH,
+    ], check=True, capture_output=True)
+    print("  ✅ 签名完成")
 
     # 计算大小
     total = 0
