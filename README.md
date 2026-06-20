@@ -1,6 +1,7 @@
 # 百工 Baigong 🏮
 
-**让 AI Agent 像工匠一样协作的开源框架。**
+**让 AI Agent 像工匠一样协作的开源框架。**  
+[![在线 Demo](https://img.shields.io/badge/%F0%9F%8E%AE%E5%9C%A8%E7%BA%BF%20Demo-augustinues.github.io-%23f59e0b)](https://augustinues.github.io/baigong/)
 
 百工出《周礼》——"百工饬力，各司其职"。每一个 Agent 就像一位工匠：有自己的角色、工具和记忆，通过看板和消息专注协作，在一次次任务中自然成长。
 
@@ -30,11 +31,9 @@
 
 百工自带一个游戏风格的 Web 管理界面——深色主题，实时动画，跟玩经营游戏一样。
 
-```bash
-pip install baigong[web]
-cd baigong/
-python run_demo.py
-```
+**👉 在线体验：https://augustinues.github.io/baigong/**
+
+本地运行：
 
 浏览器打开 **http://localhost:8000**，点击 **「开始演示」**，看 Agent 们自动协作完成"翡翠知识库入库"任务。
 
