@@ -27,6 +27,33 @@
 
 ---
 
+## macOS 应用（.dmg）
+
+百工可以作为 macOS 原生应用打包使用，双击即可运行，自动打开浏览器控制台。无需终端、无需手动启动服务器。
+
+**下载地址：** [百工 Baigong.dmg](https://github.com/Augustinues/baigong/releases) (首次发布中)
+
+或者从源码自行打包：
+
+```bash
+# 1. 安装打包工具
+pip install py2app
+
+# 2. 构建 .app
+python setup.py py2app
+
+# 3. 制作 .dmg 安装包
+python make_dmg.py
+```
+
+生成的 `dist/百工 Baigong.dmg` 打开后，把 `百工 Baigong.app` 拖到 Applications 文件夹即可。
+
+双击 .app 后自动：
+1. 在本地 8000 端口启动百工服务器
+2. 自动打开浏览器显示系统控制台
+3. 点击「启动系统」初始化 5 个 Agent
+4. 在输入框下任务，观察 Agent 协作全过程
+
 ## 在线系统监控面板
 
 百工自带一个浏览器版运行时监控面板，展示 Agent 集群的实际运行过程：

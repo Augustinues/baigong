@@ -33,5 +33,11 @@ my_*_setup/
 # Agent runtime data
 ~/.agent-company/
 
+# macOS app build
+*.app/
+*.dmg
+*.icns
+*.iconset
+
 # Logs
 *.log
