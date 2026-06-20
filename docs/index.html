@@ -6,68 +6,62 @@
 <title>百工 Baigong — Agent 工厂</title>
 <style>
 /* ═══════════════════════════════════════
-   百工 Baigong — DESIGN.md 驱动
-   设计系统：深色海军蓝 + 靛蓝强调
-   字体：系统原生 SF + PingFang
-   间距：4px 基准
-   动效：150-200ms ease
+   百工 Baigong Theme System
+   先声明所有主题，再声明 :root 默认
+   主题切换靠 JS 直接设 CSS 变量（不依赖 data-theme 覆盖）
    ═══════════════════════════════════════ */
 
-/* ── 7 套完整主题（每套全量变量） ── */
-[data-theme="indigo"] {
-  --canvas:#0c0f1e;--surface:#141829;--elevated:#1e2338;--border:#2a304a;
-  --ink:#e8ecf4;--dim:#7c84a3;--muted:#555c7a;
-  --accent:#4f5bf5;--accent-hover:#3f4ae0;--accent-subtle:rgba(79,91,245,.12);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-[data-theme="amber"] {
-  --canvas:#120f08;--surface:#18140a;--elevated:#221d10;--border:#2f2816;
-  --ink:#f0e8d8;--dim:#a09070;--muted:#706548;
-  --accent:#f59e0b;--accent-hover:#d48a08;--accent-subtle:rgba(245,158,11,.12);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-[data-theme="jade"] {
-  --canvas:#0a1410;--surface:#101e18;--elevated:#172b21;--border:#1f382b;
-  --ink:#d4f0e0;--dim:#6ea88a;--muted:#4f7a64;
-  --accent:#10b981;--accent-hover:#059669;--accent-subtle:rgba(16,185,129,.12);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-[data-theme="twilight"] {
-  --canvas:#10091a;--surface:#181026;--elevated:#221a33;--border:#2d2340;
-  --ink:#e6daf5;--dim:#9a85b8;--muted:#6e5a8a;
-  --accent:#a855f7;--accent-hover:#9333ea;--accent-subtle:rgba(168,85,247,.12);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-[data-theme="rose"] {
-  --canvas:#16080d;--surface:#1f0c13;--elevated:#2c141e;--border:#3b1b29;
-  --ink:#f0dce5;--dim:#b07a92;--muted:#8a5770;
-  --accent:#ec4899;--accent-hover:#db2777;--accent-subtle:rgba(236,72,153,.12);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-[data-theme="midnight"] {
-  --canvas:#06080e;--surface:#0b0d16;--elevated:#11131e;--border:#181b28;
-  --ink:#c8ccd6;--dim:#555a68;--muted:#3d4250;
-  --accent:#38bdf8;--accent-hover:#0ea5e9;--accent-subtle:rgba(56,189,248,.12);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-[data-theme="daylight"] {
-  --canvas:#f8fafc;--surface:#ffffff;--elevated:#f1f5f9;--border:#e2e8f0;
-  --ink:#0f172a;--dim:#64748b;--muted:#94a3b8;
-  --accent:#4f5bf5;--accent-hover:#3f4ae0;--accent-subtle:rgba(79,91,245,.08);
-  --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-}
-
+/* ── 默认主题变量（靛蓝） ── */
 :root {
-  --canvas:#0c0f1e;--surface:#141829;--elevated:#1e2338;--border:#2a304a;
-  --ink:#e8ecf4;--dim:#7c84a3;--muted:#555c7a;
-  --accent:#4f5bf5;--accent-hover:#3f4ae0;--accent-subtle:rgba(79,91,245,.12);
+  --canvas:#0d1230;--surface:#161b3d;--elevated:#1e2550;--border:#2a3270;
+  --ink:#e0e6ff;--dim:#8890c0;--muted:#5a6390;
+  --accent:#4f5bf5;--accent-hover:#3f4ae0;--accent-subtle:rgba(79,91,245,.15);
   --green:#10b981;--red:#ef4444;--amber:#f59e0b;--purple:#8b5cf6;
-  --radius:6px;--radius-card:8px;--shadow-card:0 1px 3px rgba(0,0,0,.3),0 1px 2px rgba(0,0,0,.2);
-  --shadow-modal:0 8px 32px rgba(0,0,0,.5);
-  --ease:150ms ease;
+  --radius:6px;--radius-card:10px;
+  --shadow-card:0 1px 2px rgba(0,0,0,.25),0 1px 4px rgba(0,0,0,.15);
+  --shadow-elevated:0 4px 16px rgba(0,0,0,.35),0 2px 4px rgba(0,0,0,.2);
+  --shadow-modal:0 8px 40px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.04);
+  --ease:180ms ease;
 }
 
-/* ── 基础重置 ── */
+/* ── 7 套主题（切换时 JS 直接覆盖 :root 变量） ── */
+.theme-amber {
+  --canvas:#1a1108;--surface:#2a1c0e;--elevated:#3d2916;--border:#54381e;
+  --ink:#f5e6d0;--dim:#b8956a;--muted:#8a6d48;
+  --accent:#f59e0b;--accent-hover:#d48a08;--accent-subtle:rgba(245,158,11,.18);
+  --green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+}
+.theme-jade {
+  --canvas:#0a1a12;--surface:#10281c;--elevated:#193a28;--border:#234d37;
+  --ink:#d4f0e0;--dim:#7ab894;--muted:#55906e;
+  --accent:#10b981;--accent-hover:#059669;--accent-subtle:rgba(16,185,129,.18);
+  --green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+}
+.theme-twilight {
+  --canvas:#140d22;--surface:#1f1535;--elevated:#2c1f47;--border:#3c2a5c;
+  --ink:#e8ddf5;--dim:#b095d0;--muted:#8870a8;
+  --accent:#a855f7;--accent-hover:#9333ea;--accent-subtle:rgba(168,85,247,.18);
+}
+.theme-rose {
+  --canvas:#1a0a10;--surface:#2a101e;--elevated:#3d192c;--border:#54233c;
+  --ink:#f5e0ea;--dim:#c088a8;--muted:#a06888;
+  --accent:#ec4899;--accent-hover:#db2777;--accent-subtle:rgba(236,72,153,.18);
+}
+.theme-midnight {
+  --canvas:#050610;--surface:#0a0c1a;--elevated:#101226;--border:#181b36;
+  --ink:#c8ccd8;--dim:#5a5e78;--muted:#3d4158;
+  --accent:#38bdf8;--accent-hover:#0ea5e9;--accent-subtle:rgba(56,189,248,.18);
+}
+.theme-daylight {
+  --canvas:#f0f4ff;--surface:#ffffff;--elevated:#e6edf8;--border:#cdd9e8;
+  --ink:#0a1028;--dim:#5a6890;--muted:#8895b8;
+  --accent:#4f5bf5;--accent-hover:#3f4ae0;--accent-subtle:rgba(79,91,245,.1);
+  --green:#10b981;--red:#ef4444;--purple:#8b5cf6;
+}
+/* 靛蓝默认 = :root + theme-indigo 类（切换时用） */
+.theme-indigo{}
+
+/* ── 基础 ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{
   font-family:-apple-system,"PingFang SC","SF Pro Text","Helvetica Neue",sans-serif;
@@ -77,159 +71,157 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 code,.log-box{font-family:"SF Mono","Menlo","Monaco","Consolas",monospace;font-size:11px}
-
-/* ── 过渡 ── */
-body,*{transition:background var(--ease),color var(--ease),border-color var(--ease),box-shadow var(--ease)}
+*,*::before,*::after{transition:background var(--ease),color var(--ease),border-color var(--ease),box-shadow var(--ease)}
 
 /* ── 顶部栏 ── */
-.hdr{display:flex;align-items:center;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);gap:12px;flex-shrink:0}
-.hdr h1{font-size:15px;font-weight:700;letter-spacing:.3px}
-.hdr h1 span{font-weight:400;color:var(--dim);font-size:12px;margin-left:4px}
+.hdr{display:flex;align-items:center;padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--border);gap:14px;flex-shrink:0}
+.hdr h1{font-size:16px;font-weight:700;letter-spacing:.3px;display:flex;align-items:center;gap:4px}
+.hdr h1 span{font-weight:400;color:var(--dim);font-size:12px}
 #sysStat{font-size:11px;color:var(--dim);min-width:70px}
 .hdr-center{display:flex;align-items:center;gap:8px}
-/* ── 按钮 ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;padding:6px 14px;border:none;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;transition:all var(--ease);line-height:1;white-space:nowrap}
-.btn-pri{background:var(--accent);color:#fff}.btn-pri:hover{background:var(--accent-hover)}.btn-pri:disabled{opacity:.4;cursor:not-allowed;filter:none}
-.btn-red{background:var(--red);color:#fff}.btn-red:hover{filter:brightness(1.15)}
-.btn-ok{background:var(--green);color:#fff}.btn-ok:hover{filter:brightness(1.15)}
-.btn-sm{padding:4px 10px;font-size:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 16px;border:none;border-radius:var(--radius);font-size:11px;font-weight:600;cursor:pointer;transition:all var(--ease);line-height:1;white-space:nowrap}
+.btn-pri{background:var(--accent);color:#fff;box-shadow:0 0 0 0 rgba(79,91,245,0)}.btn-pri:hover{background:var(--accent-hover);box-shadow:0 0 20px var(--accent-subtle)}.btn-pri:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;filter:none}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{filter:brightness(1.2)}
+.btn-ok{background:var(--green);color:#fff}.btn-ok:hover{filter:brightness(1.2)}
+.btn-sm{padding:4px 12px;font-size:10px}
 .btn-ghost{background:transparent;color:var(--dim);border:1px solid var(--border)}.btn-ghost:hover{color:var(--ink);border-color:var(--accent)}
 
-/* ── 任务输入栏 ── */
-.task-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
+/* ── 任务栏 ── */
+.task-bar{display:flex;align-items:center;gap:8px;padding:8px 18px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .task-bar input{flex:1;padding:7px 12px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);font-size:13px;outline:none;font-family:inherit}
-.task-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-subtle)}
+.task-bar input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-subtle)}
 .task-bar input::placeholder{color:var(--muted)}
-.task-bar select{padding:5px 10px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);font-size:12px;outline:none;font-family:inherit}
-.task-bar select:focus{border-color:var(--accent)}
-.theme-picker{display:flex;gap:4px;margin-left:auto}
-.theme-dot{width:16px;height:16px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all var(--ease);flex-shrink:0}
-.theme-dot.act{border-color:var(--ink)}.theme-dot:hover{transform:scale(1.2)}
+.task-bar select{padding:5px 10px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);font-size:12px;outline:none;font-family:inherit;cursor:pointer}
+.task-bar select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-subtle)}
+.theme-picker{display:flex;gap:5px;margin-left:auto}
+.theme-dot{width:18px;height:18px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:all var(--ease);flex-shrink:0}
+.theme-dot:hover{transform:scale(1.25);box-shadow:0 0 12px var(--accent-subtle)}
+.theme-dot.act{border-color:var(--ink);box-shadow:0 0 0 2px var(--accent-subtle)}
 .hdr-actions{display:flex;align-items:center;gap:4px}
 .hdr-actions .btn{background:var(--elevated);color:var(--dim);padding:3px 8px;font-size:12px}.hdr-actions .btn:hover{color:var(--ink);background:var(--border)}
 
 /* ── 三栏布局 ── */
 .main{display:flex;flex:1;overflow:hidden;gap:1px;background:var(--border)}
 .col{display:flex;flex-direction:column;overflow:hidden}
-.col-left{width:245px;flex-shrink:0;background:var(--surface)}
+.col-left{width:248px;flex-shrink:0;background:var(--surface)}
 .col-center{flex:1;background:var(--surface)}
-.col-right{width:310px;flex-shrink:0;background:var(--surface)}
-.col-h{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface)}
+.col-right{width:320px;flex-shrink:0;background:var(--surface)}
+.col-h{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);flex-shrink:0}
 .col-h .cnt{font-size:11px;color:var(--dim);font-weight:400}
-.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:9999px;font-size:10px;font-weight:600;padding:0 6px}
-.badge-pending{background:rgba(245,158,11,.15);color:var(--amber)}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:999px;font-size:10px;font-weight:600;padding:0 7px}
+.badge-pending{background:rgba(245,158,11,.18);color:var(--amber)}
 .badge-working{background:var(--accent-subtle);color:var(--accent)}
-.badge-done{background:rgba(16,185,129,.15);color:var(--green)}
+.badge-done{background:rgba(16,185,129,.18);color:var(--green)}
 
 /* ── Agent 列表 ── */
 .ag-list{flex:1;overflow-y:auto;padding:6px}
-.ag-card{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--radius-card);cursor:pointer;transition:all var(--ease);border:1px solid transparent;margin-bottom:2px}
-.ag-card:hover{background:var(--elevated)}
-.ag-card.sel{border-color:var(--accent);background:var(--accent-subtle)}
+.ag-card{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--radius-card);cursor:pointer;transition:all var(--ease);border:1px solid transparent;margin-bottom:3px}
+.ag-card:hover{background:var(--elevated);border-color:var(--border)}
+.ag-card.sel{border-color:var(--accent);background:var(--accent-subtle);box-shadow:0 0 0 1px var(--accent-subtle)}
 .ag-av-wrap{position:relative;flex-shrink:0}
-.ag-av{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;background:var(--elevated)}
-.dot{position:absolute;bottom:-1px;right:-1px;width:8px;height:8px;border-radius:50%;border:2px solid var(--surface)}
+.ag-av{width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--elevated);box-shadow:var(--shadow-card)}
+.dot{position:absolute;bottom:-1px;right:-1px;width:9px;height:9px;border-radius:50%;border:2px solid var(--surface);box-shadow:0 0 0 1px rgba(0,0,0,.3)}
 .dot-idle{background:var(--dim)}.dot-thinking{background:var(--amber);animation:pulse 1s ease-in-out infinite}.dot-acting{background:var(--accent);animation:pulse 1s ease-in-out infinite}.dot-done{background:var(--green)}.dot-error{background:var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.85)}}
 .ag-info{flex:1;min-width:0}
-.ag-name{font-size:13px;font-weight:600}
+.ag-name{font-size:13px;font-weight:600;display:flex;align-items:center;gap:4px}
 .ag-role2{font-size:10px;color:var(--dim);margin-top:1px}
 .ag-action{font-size:10px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 
-/* ── 新建 Agent 按钮 ── */
-.btn-new-agent{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 8px;padding:8px;background:transparent;border:1.5px dashed var(--border);border-radius:var(--radius-card);color:var(--dim);font-size:12px;cursor:pointer;transition:all var(--ease);font-family:inherit}
+/* ── 新建按钮 ── */
+.btn-new-agent{display:flex;align-items:center;justify-content:center;gap:6px;margin:6px 8px;padding:9px;background:transparent;border:1.5px dashed var(--border);border-radius:var(--radius-card);color:var(--dim);font-size:12px;cursor:pointer;transition:all var(--ease);font-family:inherit}
 .btn-new-agent:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-subtle)}
 
-/* ── 标签页栏 ── */
-.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;background:var(--surface);padding:0 8px}
-.tab{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--dim);transition:all var(--ease)}.tab:hover{color:var(--ink)}.tab.act{border-bottom-color:var(--accent);color:var(--accent)}
+/* ── 标签页 ── */
+.tab-bar{display:flex;border-bottom:1px solid var(--border);flex-shrink:0;padding:0 10px}
+.tab{padding:9px 18px;font-size:12px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--dim);transition:all var(--ease)}
+.tab:hover{color:var(--ink)}.tab.act{border-bottom-color:var(--accent);color:var(--accent)}
 
 /* ── 看板 ── */
-.kanban{display:flex;flex:1;overflow:hidden;gap:10px;padding:10px}
-.kanban-col{flex:1;display:flex;flex-direction:column;background:var(--elevated);border-radius:var(--radius-card);overflow:hidden}
-.kanban-h{padding:8px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.kanban-body{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:4px}
-.kanban-empty{padding:24px;text-align:center;color:var(--dim);font-size:11px}
+.kanban{display:flex;flex:1;overflow:hidden;gap:10px;padding:10px;background:var(--canvas)}
+.kanban-col{flex:1;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-card);overflow:hidden;box-shadow:var(--shadow-card)}
+.kanban-h{padding:8px 12px;font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;border-bottom:1px solid var(--border)}
+.kanban-body{flex:1;overflow-y:auto;padding:6px;display:flex;flex-direction:column;gap:5px}
+.kanban-empty{padding:28px;text-align:center;color:var(--dim);font-size:11px}
 
 /* ── 任务卡片 ── */
-.task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;transition:all var(--ease);cursor:default;box-shadow:var(--shadow-card)}
-.task-card:hover{border-color:var(--accent)}
-.task-card.status-pending{border-left:3px solid var(--amber)}
-.task-card.status-in_progress{border-left:3px solid var(--accent);background:linear-gradient(135deg,var(--surface),color-mix(in srgb,var(--accent-subtle) 50%,var(--surface)))}
-.task-card.status-done,.task-card.status-completed{border-left:3px solid var(--green);opacity:.75}
-.task-card.status-failed,.task-card.status-stuck{border-left:3px solid var(--red)}
-.tc-goal{font-size:12px;font-weight:500;line-height:1.4;color:var(--ink)}
-.tc-assign{font-size:11px;color:var(--dim);margin-top:4px}
+.task-card{background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);padding:9px 11px;transition:all var(--ease);cursor:default;box-shadow:var(--shadow-card);position:relative}
+.task-card::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;border-radius:3px 0 0 3px}
+.task-card.status-pending::before{background:var(--amber)}
+.task-card.status-in_progress::before{background:var(--accent)}
+.task-card.status-done::before,.task-card.status-completed::before{background:var(--green);opacity:.6}
+.task-card.status-failed::before,.task-card.status-stuck::before{background:var(--red)}
+.task-card:hover{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-subtle),var(--shadow-elevated)}
+.tc-goal{font-size:12px;font-weight:500;line-height:1.4;padding-left:4px}
+.tc-assign{font-size:11px;color:var(--dim);margin-top:4px;padding-left:4px}
 .tc-assign strong{color:var(--accent);font-weight:600}
-.tc-result{font-size:11px;color:var(--green);margin-top:3px;line-height:1.3}
-.tc-bar{height:3px;background:var(--elevated);border-radius:2px;margin-top:5px;overflow:hidden}
-.tc-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s ease}
+.tc-result{font-size:11px;color:var(--green);margin-top:3px;line-height:1.3;padding-left:4px}
+.tc-bar{height:3px;background:var(--elevated);border-radius:2px;margin-top:6px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(0,0,0,.2)}
+.tc-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
 
-/* ── Agent 工作流状态条 ── */
-.wf-bar{display:flex;gap:4px;padding:6px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0}
-.wf-step{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:9999px;font-size:10px;background:var(--elevated);color:var(--dim)}
-.wf-step.act{background:var(--accent-subtle);color:var(--accent)}
-.wf-step.done{background:rgba(16,185,129,.12);color:var(--green)}
+/* ── 工作流状态条 ── */
+.wf-bar{display:flex;gap:4px;padding:6px 12px;border-bottom:1px solid var(--border);flex-wrap:wrap;flex-shrink:0;background:var(--surface)}
+.wf-step{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;font-size:10px;background:var(--elevated);color:var(--dim);border:1px solid transparent;box-shadow:var(--shadow-card)}
+.wf-step.act{background:var(--accent-subtle);color:var(--accent);border-color:var(--accent)}
+.wf-step.done{background:rgba(16,185,129,.12);color:var(--green);border-color:rgba(16,185,129,.2)}
 
-/* ── 编辑表单 ── */
-.center-scroll{flex:1;overflow-y:auto;padding:12px}
-.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:6px;margin-bottom:14px}
-.ov-card{background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-card);padding:10px;text-align:center}
-.ov-val{font-size:20px;font-weight:700;color:var(--accent)}
-.ov-lbl{font-size:10px;color:var(--dim);margin-top:3px}
-.edit-s{margin-bottom:14px}
-.edit-s>h3{font-size:11px;font-weight:600;color:var(--accent);margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border)}
-.fg{margin-bottom:8px}.fg label{display:block;font-size:10px;font-weight:600;margin-bottom:3px;color:var(--ink)}
-.fg input,.fg select,.fg textarea{width:100%;padding:6px 10px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);font-size:13px;outline:none;font-family:inherit}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-subtle)}
-.fg textarea{min-height:44px;resize:vertical;line-height:1.5}
-.fg-hint{font-size:10px;color:var(--muted);margin-top:2px}
-.tool-grid{display:flex;flex-wrap:wrap;gap:4px}
-.tool-chk{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;background:var(--elevated);border:1px solid var(--border);border-radius:9999px;cursor:pointer;font-size:11px;transition:all var(--ease)}
+/* ── 编辑区域 ── */
+.center-scroll{flex:1;overflow-y:auto;padding:14px}
+.ov-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:8px;margin-bottom:16px}
+.ov-card{background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius-card);padding:12px;text-align:center;box-shadow:var(--shadow-card)}
+.ov-val{font-size:22px;font-weight:700;color:var(--accent)}
+.ov-lbl{font-size:10px;color:var(--dim);margin-top:4px}
+.edit-s{margin-bottom:16px}
+.edit-s>h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.fg{margin-bottom:10px}.fg label{display:block;font-size:10px;font-weight:600;margin-bottom:3px;text-transform:uppercase;letter-spacing:.3px;color:var(--dim)}
+.fg input,.fg select,.fg textarea{width:100%;padding:7px 10px;background:var(--elevated);border:1px solid var(--border);border-radius:var(--radius);color:var(--ink);font-size:13px;outline:none;font-family:inherit;box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-subtle)}
+.fg textarea{min-height:48px;resize:vertical;line-height:1.5}
+.fg-hint{font-size:10px;color:var(--muted);margin-top:3px;padding-left:2px}
+.tool-grid{display:flex;flex-wrap:wrap;gap:5px}
+.tool-chk{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--elevated);border:1px solid var(--border);border-radius:999px;cursor:pointer;font-size:11px;transition:all var(--ease);box-shadow:var(--shadow-card)}
 .tool-chk input{display:none}
 .tool-chk.chk{border-color:var(--accent);background:var(--accent-subtle);color:var(--accent)}
-.edit-acts{display:flex;gap:8px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);margin-top:4px}
-.edit-acts .btn{padding:7px 16px;font-size:12px}
+.edit-acts{display:flex;gap:8px;justify-content:flex-end;padding-top:10px;border-top:1px solid var(--border);margin-top:6px}
 
 /* ── 日志 ── */
 .log-box{flex:1;overflow-y:auto;padding:4px 8px;font-size:11px;line-height:1.6}
-.l{display:flex;gap:4px;padding:2px 4px;border-radius:3px;transition:background var(--ease)}
+.l{display:flex;gap:4px;padding:2px 6px;border-radius:4px;transition:background var(--ease);margin:1px 0}
 .l:hover{background:var(--elevated)}
 .l-t{color:var(--muted);flex-shrink:0;font-variant-numeric:tabular-nums}
-.l-m{flex:1}.l.act .l-m{color:var(--accent)}.l.res .l-m{color:var(--green)}.l.thk .l-m{color:var(--amber);font-style:italic}.l.mem .l-m{color:var(--purple)}.l.err .l-m{color:var(--red)}
+.l-m{flex:1}
+.l.act .l-m{color:var(--accent)}.l.res .l-m{color:var(--green)}.l.thk .l-m{color:var(--amber);font-style:italic}.l.mem .l-m{color:var(--purple)}.l.err .l-m{color:var(--red)}
 
 /* ── Modal ── */
 .modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:200;align-items:center;justify-content:center}
-.modal.act{display:flex}
-.modal-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);backdrop-filter:blur(2px)}
-.modal-c{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:10px;width:440px;max-width:92vw;box-shadow:var(--shadow-modal)}
-.modal-h{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600}
-.modal-close{cursor:pointer;color:var(--dim);padding:3px 8px;border-radius:4px;font-size:15px}.modal-close:hover{background:var(--elevated);color:var(--ink)}
-.modal-b{padding:16px}
-.up-info{display:flex;justify-content:space-between;padding:6px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.modal.act{display:flex}.modal-bg{position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.modal-c{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:12px;width:450px;max-width:92vw;box-shadow:var(--shadow-modal)}
+.modal-h{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--border);font-size:14px;font-weight:600}
+.modal-close{cursor:pointer;color:var(--dim);padding:3px 10px;border-radius:5px;font-size:16px}.modal-close:hover{background:var(--elevated);color:var(--ink)}
+.modal-b{padding:18px}
+.up-info{display:flex;justify-content:space-between;padding:7px 0;font-size:12px;border-bottom:1px solid var(--border)}
 .up-label{color:var(--dim)}.up-val{font-weight:600}
-.up-status{margin:10px 0;font-size:12px;padding:8px 10px;background:var(--elevated);border-radius:var(--radius);min-height:20px;color:var(--dim);white-space:pre-wrap;line-height:1.4}
-.up-acts{display:flex;gap:8px;margin-top:8px}
-.up-preview{font-size:11px;color:var(--dim);margin-top:8px;max-height:90px;overflow-y:auto;padding:6px 8px;white-space:pre-wrap;background:var(--elevated);border-radius:var(--radius);line-height:1.4}
+.up-status{margin:10px 0;font-size:12px;padding:10px 12px;background:var(--elevated);border-radius:var(--radius);min-height:24px;color:var(--dim);white-space:pre-wrap;line-height:1.5;box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
+.up-acts{display:flex;gap:8px;margin-top:10px}.up-preview{font-size:11px;color:var(--dim);margin-top:10px;max-height:100px;overflow-y:auto;padding:8px 10px;white-space:pre-wrap;background:var(--elevated);border-radius:var(--radius);line-height:1.4;box-shadow:inset 0 1px 3px rgba(0,0,0,.15)}
 
 /* ── 滚动条 ── */
-::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar{width:5px;height:5px}
 ::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent)}
 </style>
 </head>
 <body>
 <div class="hdr">
   <h1>🏮 百工 <span>Baigong</span></h1>
-  <span id="sysStat">⏳ 加载中...</span>
+  <span id="sysStat">⏳ 加载...</span>
   <div class="hdr-center">
     <button class="btn btn-pri" id="btnStart">▶ 启动</button>
     <button class="btn btn-red" id="btnStop" style="display:none">⏹ 停止</button>
   </div>
   <div class="theme-picker" id="themePicker"></div>
   <div class="hdr-actions">
-    <span style="font-size:11px;color:var(--dim);margin-right:2px" id="taskBadge"></span>
+    <span style="font-size:11px;color:var(--dim);margin-right:4px" id="taskBadge"></span>
     <button class="btn" onclick="showUpdate()" title="版本与更新">⚙️</button>
   </div>
 </div>
@@ -260,7 +252,7 @@ body,*{transition:background var(--ease),color var(--ease),border-color var(--ea
   </div>
   <div class="col col-right">
     <div class="col-h"><span>📜 日志</span><span class="cnt" id="logCnt">0</span></div>
-    <div class="log-box" id="logBox"><div style="padding:24px;text-align:center;color:var(--dim);font-size:12px">等待系统启动...</div></div>
+    <div class="log-box" id="logBox"><div style="padding:28px;text-align:center;color:var(--dim);font-size:12px">等待系统启动...</div></div>
   </div>
 </div>
 
@@ -303,31 +295,44 @@ body,*{transition:background var(--ease),color var(--ease),border-color var(--ea
 <script>
 const $=id=>document.getElementById(id);
 
-const FULL_THEMES={
-  indigo:{name:'靛蓝',dot:'#4f5bf5'},amber:{name:'琥珀',dot:'#f59e0b'},
-  jade:{name:'翡翠',dot:'#10b981'},twilight:{name:'暮紫',dot:'#a855f7'},
-  rose:{name:'玫瑰',dot:'#ec4899'},midnight:{name:'极夜',dot:'#38bdf8'},
-  daylight:{name:'白昼',dot:'#4f5bf5'}
+/* ═══ 7 套完整主题（独立 CSS 类名，JS 直接覆盖 :root 变量） ═══ */
+const THEMES={
+  indigo:{cls:'theme-indigo',name:'靛蓝',dot:'#4f5bf5',bg:'#0d1230'},
+  amber:{cls:'theme-amber',name:'琥珀',dot:'#f59e0b',bg:'#1a1108'},
+  jade:{cls:'theme-jade',name:'翡翠',dot:'#10b981',bg:'#0a1a12'},
+  twilight:{cls:'theme-twilight',name:'暮紫',dot:'#a855f7',bg:'#140d22'},
+  rose:{cls:'theme-rose',name:'玫瑰',dot:'#ec4899',bg:'#1a0a10'},
+  midnight:{cls:'theme-midnight',name:'极夜',dot:'#38bdf8',bg:'#050610'},
+  daylight:{cls:'theme-daylight',name:'白昼',dot:'#4f5bf5',bg:'#f0f4ff'},
 };
-const THEME_NAMES=Object.keys(FULL_THEMES);
+const THEME_NAMES=Object.keys(THEMES);
+
 let es=null,state={agents:[],logs:[],tasks:[]},selectedAgent=null,providers={};
 let currentTab='kanban',editingAgentId=null;
 
 async function api(path,o={}){const r=await fetch(path,{headers:{'Content-Type':'application/json'},...o});return r.json()}
-function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;')}
 
-// Theme
+// ── 主题系统：JS 直接读写 CSS 变量 ──
 function initTheme(){
   const cur=localStorage.getItem('baigong_theme')||'indigo';
-  $('themePicker').innerHTML=THEME_NAMES.map(n=>`<div class="theme-dot ${n===cur?'act':''}" data-theme="${n}" style="background:${FULL_THEMES[n].dot}" onclick="setTheme('${n}')" title="${FULL_THEMES[n].name}"></div>`).join('');
+  $('themePicker').innerHTML=THEME_NAMES.map(n=>{
+    const t=THEMES[n];const act=n===cur?'act':'';
+    return `<div class="theme-dot ${act}" data-theme="${n}" style="background:${t.dot}" onclick="setTheme('${n}')" title="${t.name}"></div>`;
+  }).join('');
   applyTheme(cur);
 }
 function setTheme(n){
-  localStorage.setItem('baigong_theme',n);applyTheme(n);
+  localStorage.setItem('baigong_theme',n);
+  applyTheme(n);
   document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('act',d.dataset.theme===n));
   api('/api/theme',{method:'POST',body:JSON.stringify({accent:n})}).catch(()=>{});
 }
-function applyTheme(n){document.documentElement.setAttribute('data-theme',n)}
+function applyTheme(n){
+  const t=THEMES[n]||THEMES.indigo;
+  // 清空所有 theme-* 类，只加当前主题的
+  document.documentElement.className=t.cls;
+}
 
 // Init
 async function init(){
@@ -336,8 +341,7 @@ async function init(){
   const cfg=await api('/api/config');
   if(cfg&&cfg.llm&&cfg.llm.api_key)$('sysStat').textContent='已配置';
   else $('sysStat').textContent='⚠️ 未配置 API Key';
-  const pk=Object.keys(providers);
-  const sel=$('naProvider');sel.innerHTML='<option value="">使用全局</option>'+pk.map(k=>`<option value="${k}">${k}</option>`).join('');
+  const pk=Object.keys(providers);$('naProvider').innerHTML='<option value="">使用全局</option>'+pk.map(k=>`<option value="${k}">${k}</option>`).join('');
   setInterval(fetchState,3000);await fetchState();
 }
 
@@ -345,14 +349,11 @@ async function init(){
 $('btnStart').onclick=async function(){
   this.disabled=true;$('sysStat').textContent='⏳ 启动中...';
   const r=await api('/api/start',{method:'POST'});
-  if(r.ok){
-    this.style.display='none';$('btnStop').style.display='inline-block';$('sysStat').textContent='✅ 运行中';
-    connectSSE();await fetchState();
-  }else{$('sysStat').textContent='❌ '+(r.error||'失败');this.disabled=false}
+  if(r.ok){this.style.display='none';$('btnStop').style.display='inline-block';$('sysStat').textContent='✅ 运行中';connectSSE();await fetchState()}
+  else{$('sysStat').textContent='❌ '+(r.error||'失败');this.disabled=false}
 };
 $('btnStop').onclick=async function(){
-  await api('/api/stop',{method:'POST'});
-  this.style.display='none';$('btnStart').style.display='inline-block';$('btnStart').disabled=false;
+  await api('/api/stop',{method:'POST'});this.style.display='none';$('btnStart').style.display='inline-block';$('btnStart').disabled=false;
   $('sysStat').textContent='⏹ 已停止';if(es){es.close();es=null}
 };
 
@@ -363,7 +364,7 @@ async function fetchState(){const s=await api('/api/state');if(s&&s.agents)rende
 // Render
 function render(s){
   state=s;renderAgents(s);renderLogs(s);renderKanban(s);updateWfBar(s);
-  const tb=s.tasks?`📋 ${s.tasks.length} 任务`:'';$('taskBadge').textContent=tb;
+  $('taskBadge').textContent=s.tasks?`📋 ${s.tasks.length}`:'';
   if(editingAgentId&&s.agents){const a=s.agents.find(x=>x.id===editingAgentId);if(a){selectedAgent=a;if(currentTab==='edit')renderEditForm(a)}}
 }
 function renderAgents(s){
@@ -374,40 +375,29 @@ function renderAgents(s){
       <div class="ag-av-wrap"><div class="ag-av">🤖</div><span class="dot dot-${x.status||'idle'}"></span></div>
       <div class="ag-info"><div class="ag-name">${esc(x.name)}${x.is_temporary?' <span style="font-size:9px;color:var(--accent)">📎</span>':''}</div><div class="ag-role2">${esc(x.role||'')}${x.is_temporary&&x.creator?` · 由 ${esc(x.creator)} 创建`:''}</div><div class="ag-action">${x.action||'等待任务...'}</div></div>
     </div>`;
-  }).join(''):'<div style="text-align:center;padding:24px;color:var(--dim);font-size:12px">暂无 Agent<br><span style="font-size:10px">点击下方 + 新建</span></div>';
-  const sel=$('taskAgent');const idle=a.filter(x=>x.status==='idle'||x.status==='done');
-  sel.innerHTML='<option value="">自动分配（主管）</option>'+idle.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
+  }).join(''):'<div style="text-align:center;padding:28px;color:var(--dim);font-size:12px">暂无 Agent<br><span style="font-size:10px;margin-top:6px;display:block">点击下方 + 新建</span></div>';
+  const sel=$('taskAgent');sel.innerHTML='<option value="">自动分配（主管）</option>'+a.filter(x=>x.status==='idle'||x.status==='done').map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('');
 }
 function renderLogs(s){
   const l=s.logs||[];$('logCnt').textContent=l.length;
-  const el=$('logBox');if(!l.length){el.innerHTML='<div style="padding:24px;text-align:center;color:var(--dim);font-size:12px">等待系统启动...</div>';return}
-  el.innerHTML=l.slice(-200).map(x=>{const tp=(x.type||'');return `<div class="l ${tp}"><span class="l-t">${esc(x.t||'')}</span><span class="l-m">${esc(x.msg||'')}</span></div>`}).join('');
+  const el=$('logBox');if(!l.length){el.innerHTML='<div style="padding:28px;text-align:center;color:var(--dim);font-size:12px">等待系统启动...</div>';return}
+  el.innerHTML=l.slice(-200).map(x=>`<div class="l ${x.type||''}"><span class="l-t">${esc(x.t||'')}</span><span class="l-m">${esc(x.msg||'')}</span></div>`).join('');
   el.scrollTop=el.scrollHeight;
 }
 
 // Kanban
-const KANBAN_COLS={
-  pending:{title:'待处理',badge:'pending',states:['pending']},
-  progress:{title:'进行中',badge:'working',states:['in_progress','assigned']},
-  done:{title:'已完成',badge:'done',states:['completed','done','failed','stuck','cancelled']}
-};
+const KANBAN_COLS={pending:{title:'待处理',badge:'pending',states:['pending']},progress:{title:'进行中',badge:'working',states:['in_progress','assigned']},done:{title:'已完成',badge:'done',states:['completed','done','failed','stuck','cancelled']}};
 function renderKanban(s){
   const tasks=s.tasks||[];const kanban=$('kanbanArea');
-  const colsHtml=Object.values(KANBAN_COLS).map(col=>{
+  kanban.innerHTML=Object.values(KANBAN_COLS).map(col=>{
     const items=tasks.filter(t=>col.states.includes(t.status)||(!t.status&&col.states[0]==='pending'));
     return `<div class="kanban-col"><div class="kanban-h"><span>${col.title}</span><span class="badge badge-${col.badge}">${items.length}</span></div><div class="kanban-body">${
       items.length?items.map(t=>{
-        const progress=t.progress?Math.round(t.progress*100):0;
-        return `<div class="task-card status-${t.status||'pending'}">
-          <div class="tc-goal">${esc(t.goal)}</div>
-          ${t.assignee?`<div class="tc-assign">👤 <strong>${esc(t.assignee)}</strong></div>`:''}
-          ${t.result?`<div class="tc-result">${esc(t.result).slice(0,100)}${(t.result||'').length>100?'...':''}</div>`:''}
-          ${progress>0?`<div class="tc-bar"><div class="tc-fill" style="width:${progress}%"></div></div>`:''}
-        </div>`;
+        const p=t.progress?Math.round(t.progress*100):0;
+        return `<div class="task-card status-${t.status||'pending'}"><div class="tc-goal">${esc(t.goal)}</div>${t.assignee?`<div class="tc-assign">👤 <strong>${esc(t.assignee)}</strong></div>`:''}${t.result?`<div class="tc-result">${esc(t.result).slice(0,100)}${(t.result||'').length>100?'...':''}</div>`:''}${p>0?`<div class="tc-bar"><div class="tc-fill" style="width:${p}%"></div></div>`:''}</div>`;
       }).join(''):`<div class="kanban-empty">暂无任务</div>`
     }</div></div>`;
   }).join('');
-  kanban.innerHTML=colsHtml;
 }
 function updateWfBar(s){
   const a=s.agents||[];const el=$('wfBar');
@@ -415,101 +405,62 @@ function updateWfBar(s){
   el.innerHTML=a.map(x=>{
     const cls=x.status==='thinking'||x.status==='acting'?'act':(x.status==='done'?'done':'');
     const label=x.status==='thinking'?'🤔':(x.status==='acting'?'🔧':(x.status==='done'?'✅':'⏳'));
-    const task=x.current_task?` ${esc(x.current_task).slice(0,20)}`:x.action?` ${esc(x.action).slice(0,20)}`:'';
-    return `<span class="wf-step ${cls}">${esc(x.name)} ${label}${task}</span>`;
+    return `<span class="wf-step ${cls}">${esc(x.name)} ${label}${x.current_task?` ${esc(x.current_task).slice(0,20)}`:x.action?` ${esc(x.action).slice(0,20)}`:''}</span>`;
   }).join('');
 }
 
 // Tabs
 function showTab(tab,el){
-  currentTab=tab;
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));
-  if(el)el.classList.add('act');
+  currentTab=tab;document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));if(el)el.classList.add('act');
   if(tab==='kanban'){$('kanbanView').style.display='flex';$('editView').style.display='none';renderKanban(state);editingAgentId=null}
   else{$('kanbanView').style.display='none';$('editView').style.display='flex';if(selectedAgent)renderEditForm(selectedAgent)}
 }
-$('detailTitle')?.addEventListener||null;
 
-// Select Agent
+// Select Agent → Edit
 async function selectAgent(id){
   try{const a=await api('/api/agents/'+id);if(a&&a.id){selectedAgent=a;editingAgentId=a.id}}catch(e){const a=(state.agents||[]).find(x=>x.id===id);if(a){selectedAgent=a;editingAgentId=a.id}}
-  const editTab=document.getElementById('tabEdit');
-  editTab.style.display='block';editTab.textContent='✏️ '+esc(selectedAgent.name);
-  showTab('edit',editTab);
-  renderEditForm(selectedAgent);
+  const et=$('tabEdit');et.style.display='block';et.textContent='✏️ '+esc(selectedAgent.name);showTab('edit',et);renderEditForm(selectedAgent);
 }
 
 // Edit Form
 function renderEditForm(a){
-  const tools=a.tools||[];
-  const allTools=Object.keys((state.tools||{})).length?Object.keys(state.tools||{}):['web_search','web_extract','file_read','file_write','code_exec'];
-  const pks=Object.keys(providers);
-  $('editContent').innerHTML=`
-    <div class="edit-s"><h3>📋 基本信息</h3>
-      <div class="fg"><label>名字</label><input id="eName" value="${esc(a.name)}"></div>
-      <div class="fg"><label>角色描述</label><input id="eRole" value="${esc(a.role||'')}" placeholder="例如：研究员、编辑、管理员"></div></div>
-    <div class="edit-s"><h3>🧠 人设 / System Prompt</h3>
-      <div class="fg"><textarea id="ePrompt" rows="4" placeholder="定义 Agent 的人格、行为规则...">${esc(a.system_prompt||'')}</textarea></div></div>
-    <div class="edit-s"><h3>🔌 LLM 配置</h3>
-      <div class="fg"><label>提供商</label><select id="eProvider" onchange="onProvChange()"><option value="">使用全局</option>${pks.map(k=>`<option value="${k}" ${a.provider===k?'selected':''}>${k}</option>`).join('')}</select></div>
-      <div class="fg"><label>模型</label><select id="eModel"><option value="">使用全局</option>${
-        a.provider&&providers[a.provider]?(providers[a.provider].models||[]).map(m=>`<option value="${m}" ${a.model===m?'selected':''}>${m}</option>`).join(''):''
-      }</select></div>
-      <div class="fg"><label>API Key</label><input id="eApiKey" type="password" value="${esc(a.api_key||'')}" placeholder="留空用全局"></div>
-      <div class="fg"><label>API 地址</label><input id="eBaseUrl" value="${esc(a.base_url||'')}" placeholder="留空用默认"></div></div>
-    <div class="edit-s"><h3>🔧 工具（点击选中）</h3>
-      <div class="tool-grid">${allTools.map(t=>`<label class="tool-chk ${tools.includes(t)?'chk':''}" onclick="this.classList.toggle('chk')"><input type="checkbox" ${tools.includes(t)?'checked':''} value="${t}"> ${t}</label>`).join('')}</div></div>
-    <div class="edit-acts">
-      <button class="btn btn-red" onclick="if(confirm('确定删除这个 Agent？'))deleteAgent('${a.id}')">🗑 删除</button>
-      <button class="btn btn-pri" onclick="saveAgent('${a.id}')">💾 保存更改</button></div>`;
+  const t=a.tools||[],at=Object.keys((state.tools||{})).length?Object.keys(state.tools||{}):['web_search','web_extract','file_read','file_write','code_exec'],pk=Object.keys(providers);
+  $('editContent').innerHTML=`<div class="edit-s"><h3>📋 基本信息</h3><div class="fg"><label>名字</label><input id="eName" value="${esc(a.name)}"></div><div class="fg"><label>角色描述</label><input id="eRole" value="${esc(a.role||'')}" placeholder="例如：研究员、编辑、管理员"></div></div>
+  <div class="edit-s"><h3>🧠 人设 / System Prompt</h3><div class="fg"><textarea id="ePrompt" rows="4" placeholder="定义 Agent 的人格、行为规则...">${esc(a.system_prompt||'')}</textarea></div></div>
+  <div class="edit-s"><h3>🔌 LLM 配置</h3><div class="fg"><label>提供商</label><select id="eProvider" onchange="onProvChange()"><option value="">使用全局</option>${pk.map(k=>\`<option value="\${k}" \${a.provider===k?'selected':''}>\${k}</option>\`).join('')}</select></div>
+  <div class="fg"><label>模型</label><select id="eModel"><option value="">使用全局</option>${a.provider&&providers[a.provider]?(providers[a.provider].models||[]).map(m=>\`<option value="\${m}" \${a.model===m?'selected':''}>\${m}</option>\`).join(''):''}</select></div>
+  <div class="fg"><label>API Key</label><input id="eApiKey" type="password" value="${esc(a.api_key||'')}" placeholder="留空用全局"></div>
+  <div class="fg"><label>API 地址</label><input id="eBaseUrl" value="${esc(a.base_url||'')}" placeholder="留空用默认"></div></div>
+  <div class="edit-s"><h3>🔧 工具（点击选中）</h3><div class="tool-grid">${at.map(t2=>\`<label class="tool-chk \${t.includes(t2)?'chk':''}" onclick="this.classList.toggle('chk')"><input type="checkbox" \${t.includes(t2)?'checked':''} value="\${t2}"> \${t2}</label>\`).join('')}</div></div>
+  <div class="edit-acts"><button class="btn btn-red" onclick="if(confirm('确定删除这个 Agent？'))deleteAgent('${a.id}')">🗑 删除</button><button class="btn btn-pri" onclick="saveAgent('${a.id}')">💾 保存更改</button></div>`;
 }
 function onProvChange(){
-  const p=$('eProvider').value;const sel=$('eModel');
+  const p=$('eProvider').value,sel=$('eModel');
   if(!p||!providers[p]){sel.innerHTML='<option value="">使用全局</option>';return}
   sel.innerHTML='<option value="">使用全局</option>'+providers[p].models.map(m=>`<option value="${m}">${m}</option>`).join('');
 }
 async function saveAgent(id){
-  const body={};const n=$('eName').value.trim();if(n)body.name=n;
-  const r=$('eRole').value.trim();if(r)body.role=r;
-  const p=$('ePrompt').value.trim();if(p)body.system_prompt=p;
+  const body={};const n=$('eName').value.trim();if(n)body.name=n;const r=$('eRole').value.trim();if(r)body.role=r;const p=$('ePrompt').value.trim();if(p)body.system_prompt=p;
   body.tools=[];document.querySelectorAll('#editContent .tool-chk input:checked').forEach(cb=>body.tools.push(cb.value));
-  body.provider=$('eProvider').value||null;body.model=$('eModel').value||null;
-  body.api_key=$('eApiKey').value||null;body.base_url=$('eBaseUrl').value||null;
+  body.provider=$('eProvider').value||null;body.model=$('eModel').value||null;body.api_key=$('eApiKey').value||null;body.base_url=$('eBaseUrl').value||null;
   $('sysStat').textContent='⏳ 保存中...';
-  try{const res=await api('/api/agents/'+id,{method:'PATCH',body:JSON.stringify(body)});
-    if(res.ok){$('sysStat').textContent='✅ 已保存';await fetchState();if(selectedAgent)selectAgent(selectedAgent.id)}
-    else{$('sysStat').textContent='❌ 保存失败: '+(res.detail||res.error||'未知错误')}
-  }catch(e){$('sysStat').textContent='❌ 保存失败: '+e.message}
+  try{const res=await api('/api/agents/'+id,{method:'PATCH',body:JSON.stringify(body)});if(res.ok){$('sysStat').textContent='✅ 已保存';await fetchState();if(selectedAgent)selectAgent(selectedAgent.id)}else{$('sysStat').textContent='❌ '+(res.detail||res.error||'保存失败')}}catch(e){$('sysStat').textContent='❌ '+e.message}
 }
 async function deleteAgent(id){
-  const res=await api('/api/agents/'+id,{method:'DELETE'});
-  if(res.ok){selectedAgent=null;editingAgentId=null;document.getElementById('tabEdit').style.display='none';showTab('kanban',document.querySelector('.tab'));await fetchState()}
+  const res=await api('/api/agents/'+id,{method:'DELETE'});if(res.ok){selectedAgent=null;editingAgentId=null;$('tabEdit').style.display='none';showTab('kanban',document.querySelector('.tab'));await fetchState()}
 }
 
 // New Agent
-function showNewAgent(){
-  $('newAgentModal').classList.add('act');
-  $('naName').value='';$('naRole').value='';$('naPrompt').value='';$('naProvider').value='';$('naModel').innerHTML='<option value="">使用全局</option>';
-  const allTools=Object.keys((state.tools||{})).length?Object.keys(state.tools||{}):['web_search','web_extract','file_read','file_write','code_exec'];
-  $('naTools').innerHTML=allTools.map(t=>`<label class="tool-chk chk" onclick="this.classList.toggle('chk')"><input type="checkbox" checked value="${t}"> ${t}</label>`).join('');
-}
+function showNewAgent(){$('newAgentModal').classList.add('act');$('naName').value='';$('naRole').value='';$('naPrompt').value='';$('naProvider').value='';$('naModel').innerHTML='<option value="">使用全局</option>';const at=Object.keys((state.tools||{})).length?Object.keys(state.tools||{}):['web_search','web_extract','file_read','file_write','code_exec'];$('naTools').innerHTML=at.map(t=>`<label class="tool-chk chk" onclick="this.classList.toggle('chk')"><input type="checkbox" checked value="${t}"> ${t}</label>`).join('')}
 function hideNewAgent(){$('newAgentModal').classList.remove('act')}
 async function createAgent(){
   const name=$('naName').value.trim();if(!name){$('sysStat').textContent='❌ 请输入名字';return}
-  const role=$('naRole').value.trim()||'worker';
-  const prompt=$('naPrompt').value.trim();
-  const tools=[];$('#naTools .tool-chk input:checked').forEach(cb=>tools.push(cb.value));
-  const provider=$('naProvider').value||'';const model=$('naModel').value||'';
-  $('sysStat').textContent='⏳ 创建中...';
-  const res=await api('/api/agents',{method:'POST',body:JSON.stringify({name,role,tools,system_prompt:prompt,provider,model})});
-  if(res.ok){$('sysStat').textContent='✅ Agent 已创建';hideNewAgent();await fetchState()}
-  else $('sysStat').textContent='❌ 创建失败: '+(res.error||'未知错误');
+  const role=$('naRole').value.trim()||'worker',p=$('naPrompt').value.trim(),t=[];$('#naTools .tool-chk input:checked').forEach(cb=>t.push(cb.value));
+  const pv=$('naProvider').value||'',md=$('naModel').value||'';
+  $('sysStat').textContent='⏳ 创建中...';const res=await api('/api/agents',{method:'POST',body:JSON.stringify({name,role,tools:t,system_prompt:p,provider:pv,model:md})});
+  if(res.ok){$('sysStat').textContent='✅ Agent 已创建';hideNewAgent();await fetchState()}else $('sysStat').textContent='❌ '+(res.error||'失败');
 }
-$('naProvider').onchange=function(){
-  const p=this.value;const sel=$('naModel');
-  if(!p||!providers[p]){sel.innerHTML='<option value="">使用全局</option>';return}
-  sel.innerHTML='<option value="">使用全局</option>'+providers[p].models.map(m=>`<option value="${m}">${m}</option>`).join('');
-};
+$('naProvider').onchange=function(){const p=this.value,sel=$('naModel');if(!p||!providers[p]){sel.innerHTML='<option value="">使用全局</option>';return}sel.innerHTML='<option value="">使用全局</option>'+providers[p].models.map(m=>`<option value="${m}">${m}</option>`).join('')};
 
 // Task
 async function submitTask(){
@@ -522,21 +473,8 @@ async function submitTask(){
 // Update
 function showUpdate(){$('updateModal').classList.add('act');api('/api/update/status').then(r=>{$('upCurrent').textContent='v'+r.version;$('upMode').textContent=r.mode||(r.frozen?'App打包版':'源码版')}).catch(()=>{})}
 function hideUpdate(){$('updateModal').classList.remove('act')}
-async function checkUpdate(){
-  $('upStatus').textContent='⏳ 检查中...';$('upBtnDownload').style.display='none';$('upPreview').textContent='';
-  try{const r=await api('/api/update/check');
-    $('upCurrent').textContent='v'+r.current;$('upLatest').textContent='v'+r.latest;
-    if(r.has_update){$('upBtnDownload').style.display='inline-block';$('upStatus').textContent='✅ 有新版本 v'+r.latest+' 可用！';$('upPreview').textContent=(r.body||'').slice(0,300)}
-    else{$('upStatus').textContent=r.error?'⚠️ '+r.error:'✅ 已是最新版本'}
-  }catch(e){$('upStatus').textContent='❌ 检查失败: '+e.message}
-}
-async function applyUpdate(){
-  $('upBtnDownload').disabled=true;$('upStatus').textContent='⏳ 正在下载更新...';
-  try{const r=await api('/api/update/apply',{method:'POST'});
-    if(r.ok){$('upStatus').textContent=r.message;if(r.auto_install){$('upPreview').textContent='⏳ 应用正在自动安装新版...';$('upBtnDownload').style.display='none';$('upBtnDownload').disabled=false} else if(r.download_path)$('upPreview').textContent='下载完成，请关闭应用后打开 DMG 安装'}
-    else{$('upStatus').textContent='❌ '+r.error;$('upBtnDownload').disabled=false}
-  }catch(e){$('upStatus').textContent='❌ '+e.message;$('upBtnDownload').disabled=false}
-}
+async function checkUpdate(){$('upStatus').textContent='⏳ 检查中...';$('upBtnDownload').style.display='none';$('upPreview').textContent='';try{const r=await api('/api/update/check');$('upCurrent').textContent='v'+r.current;$('upLatest').textContent='v'+r.latest;if(r.has_update){$('upBtnDownload').style.display='inline-block';$('upStatus').textContent='✅ 有新版本 v'+r.latest+' 可用！';$('upPreview').textContent=(r.body||'').slice(0,300)}else{$('upStatus').textContent=r.error?'⚠️ '+r.error:'✅ 已是最新'}}catch(e){$('upStatus').textContent='❌ '+e.message}}
+async function applyUpdate(){$('upBtnDownload').disabled=true;$('upStatus').textContent='⏳ 正在下载更新...';try{const r=await api('/api/update/apply',{method:'POST'});if(r.ok){$('upStatus').textContent=r.message;if(r.auto_install){$('upPreview').textContent='⏳ 正在自动安装...';$('upBtnDownload').style.display='none';$('upBtnDownload').disabled=false}else if(r.download_path)$('upPreview').textContent='已下载'}else{$('upStatus').textContent='❌ '+r.error;$('upBtnDownload').disabled=false}}catch(e){$('upStatus').textContent='❌ '+e.message;$('upBtnDownload').disabled=false}}
 
 init();
 </script>
