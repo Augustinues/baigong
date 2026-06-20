@@ -119,7 +119,7 @@ ROLES = [
 ]
 
 
-async def start_system(api_key: str = "", model: str = "deepseek-chat") -> dict:
+async def start_system(api_key: str = "", model: str = "deepseek-v4-flash") -> dict:
     """启动百工系统，返回 agent_id → Agent 信息"""
     global _manager, _bus, _board, _llm_client, _running
 

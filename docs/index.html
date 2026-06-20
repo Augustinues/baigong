@@ -357,10 +357,11 @@ async function submitTask(){
 
 // ── Config ──
 const PROVIDERS={
-  deepseek:{url:"https://api.deepseek.com/v1",models:["deepseek-v4-flash","deepseek-reasoner"],defaultModel:"deepseek-v4-flash"},
+  deepseek:{url:"https://api.deepseek.com/v1",models:["deepseek-v4-flash","deepseek-v4-pro"],defaultModel:"deepseek-v4-flash"},
   openai:{url:"https://api.openai.com/v1",models:["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"],defaultModel:"gpt-4o-mini"},
   dashscope:{url:"https://dashscope.aliyuncs.com/compatible-mode/v1",models:["qwen-plus","qwen-turbo","qwen-max","qwen3-vl-plus"],defaultModel:"qwen-plus"},
-  ollama:{url:"http://localhost:11434/v1",models:["llama3","qwen2.5","mistral","deepseek-r1"],defaultModel:"llama3"},
+   ollama:{url:"http://localhost:11434/v1",models:["llama3","qwen2.5","mistral","deepseek-r1"],defaultModel:"llama3"},
+   anthropic:{url:"https://api.anthropic.com/v1",models:["claude-sonnet-4","claude-haiku-3.5","claude-opus-4"],defaultModel:"claude-sonnet-4"}};
   openrouter:{url:"https://openrouter.ai/api/v1",models:["openai/gpt-4o","anthropic/claude-sonnet-4","google/gemini-2.0-flash"],defaultModel:"openai/gpt-4o"},
   custom:{url:"",models:["gpt-4o","deepseek-v4-flash","qwen-plus"],defaultModel:"gpt-4o"}
 };

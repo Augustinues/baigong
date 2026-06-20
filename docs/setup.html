@@ -122,12 +122,13 @@ input::placeholder{color:#4a4f5e}
 <script>
 const $=id=>document.getElementById(id);
 const PROVIDERS={
-  deepseek:{url:"https://api.deepseek.com/v1",models:["deepseek-v4-flash","deepseek-reasoner"],defaultModel:"deepseek-v4-flash",note:"申请地址：platform.deepseek.com → API Keys",keyPlaceholder:"sk-..."},
+  deepseek:{url:"https://api.deepseek.com/v1",models:["deepseek-v4-flash","deepseek-v4-pro"],defaultModel:"deepseek-v4-flash",note:"申请地址：platform.deepseek.com → API Keys",keyPlaceholder:"sk-..."},
   openai:{url:"https://api.openai.com/v1",models:["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"],defaultModel:"gpt-4o-mini",note:"申请地址：platform.openai.com → API Keys",keyPlaceholder:"sk-..."},
   dashscope:{url:"https://dashscope.aliyuncs.com/compatible-mode/v1",models:["qwen-plus","qwen-turbo","qwen-max","qwen3-vl-plus"],defaultModel:"qwen-plus",note:"申请地址：bailian.console.aliyun.com → API Keys",keyPlaceholder:"sk-..."},
   ollama:{url:"http://localhost:11434/v1",models:["llama3","qwen2.5","mistral","deepseek-r1"],defaultModel:"llama3",note:"本地 Ollama，确保 ollama serve 已运行",keyPlaceholder:"任意值或留空"},
   openrouter:{url:"https://openrouter.ai/api/v1",models:["openai/gpt-4o","anthropic/claude-sonnet-4","google/gemini-2.0-flash"],defaultModel:"openai/gpt-4o",note:"申请地址：openrouter.ai → Keys",keyPlaceholder:"sk-..."},
-  custom:{url:"",models:["gpt-4o","deepseek-v4-flash","qwen-plus"],defaultModel:"gpt-4o",note:"输入你的 API 地址和 Key",keyPlaceholder:"API Key"}
+  anthropic:{url:"https://api.anthropic.com/v1",models:["claude-sonnet-4","claude-haiku-3.5","claude-opus-4"],defaultModel:"claude-sonnet-4",note:"申请地址：console.anthropic.com → API Keys",keyPlaceholder:"sk-ant-..."},
+  custom:{url:"",models:["gpt-4o","deepseek-v4-flash","qwen-plus"],defaultModel:"gpt-4o",note:"输入你的 API 地址和 Key",keyPlaceholder:"API Key"},
 };
 
 function onProviderChange(){

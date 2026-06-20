@@ -38,7 +38,7 @@ DEFAULT_CONFIG = {
 PROVIDER_DEFAULTS = {
     "deepseek": {
         "base_url": "https://api.deepseek.com/v1",
-        "models": ["deepseek-v4-flash", "deepseek-v4-plus", "deepseek-reasoner"],
+        "models": ["deepseek-v4-flash", "deepseek-v4-pro"],
         "default_model": "deepseek-v4-flash",
         "note": "申请地址：platform.deepseek.com → API Keys",
     },
@@ -66,6 +66,12 @@ PROVIDER_DEFAULTS = {
         "models": ["openai/gpt-4o", "anthropic/claude-sonnet-4", "google/gemini-2.0-flash"],
         "default_model": "openai/gpt-4o",
         "note": "申请地址：openrouter.ai → Keys",
+    },
+    "anthropic": {
+        "base_url": "https://api.anthropic.com/v1",
+        "models": ["claude-sonnet-4", "claude-haiku-3.5", "claude-opus-4"],
+        "default_model": "claude-sonnet-4",
+        "note": "申请地址：console.anthropic.com → API Keys",
     },
 }
 

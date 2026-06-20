@@ -92,7 +92,7 @@ class RealOrchestrator:
             agent_id=agent_id,
             name=agent_cfg.get("name", "无名Agent"),
             role=agent_cfg.get("role", "worker"),
-            model=agent_cfg.get("model", config.get("llm.model", "deepseek-chat")),
+            model=agent_cfg.get("model", config.get("llm.model", "deepseek-v4-flash")),
             tools=agent_cfg.get("tools", ["web_search", "file_read"]),
             system_prompt=agent_cfg.get("system_prompt", "你是一个AI助手。"),
             llm=self.llm_client,
@@ -137,7 +137,7 @@ class RealOrchestrator:
             "role": role,
             "tools": tools,
             "system_prompt": system_prompt or f"你是{name}，你的角色是{role}。使用可用工具完成任务。",
-            "model": model or config.get("llm.model", "deepseek-chat"),
+            "model": model or config.get("llm.model", "deepseek-v4-flash"),
         }
         self._create_agent_instance(agent_cfg)
         config.add_agent(agent_cfg)
