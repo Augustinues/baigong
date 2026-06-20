@@ -22,7 +22,7 @@ from .real_tools import (
 )
 
 # ── 版本信息 ──
-VERSION = "0.6.1"
+VERSION = "0.7.0"
 GITHUB_REPO = "Augustinues/baigong"
 HERE = Path(__file__).parent.parent
 DOCS = HERE / "docs"

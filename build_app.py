@@ -59,8 +59,8 @@ def build():
     plist["CFBundleIdentifier"] = "com.baigong.agent"
     plist["CFBundleDisplayName"] = "百工 Baigong"
     plist["CFBundleName"] = "百工 Baigong"
-    plist["CFBundleShortVersionString"] = "0.6.1"
-    plist["CFBundleVersion"] = "0.6.1"
+    plist["CFBundleShortVersionString"] = "0.7.0"
+    plist["CFBundleVersion"] = "0.7.0"
 
     # 2. 添加 NSAllowsLocalNetworking — WKWebView 需要才能连 localhost HTTP
     if "NSAppTransportSecurity" not in plist:
