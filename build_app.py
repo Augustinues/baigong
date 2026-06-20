@@ -1,8 +1,5 @@
-"""
-百工 Baigong — macOS .app & .dmg 构建脚本 (PyInstaller)
-
-用法：
-    python build_app.py
+"""百工 Baigong — macOS .app & .dmg 构建脚本 (PyInstaller)
+纯 Python PySide6 前端版
 """
 
 import os
@@ -16,6 +13,7 @@ DIST = os.path.join(HERE, "dist")
 APP_PATH = os.path.join(DIST, f"{APP_NAME}.app")
 DMG_PATH = os.path.join(DIST, f"{APP_NAME}.dmg")
 PLIST_PATH = os.path.join(APP_PATH, "Contents", "Info.plist")
+VERSION = "0.8.0"
 
 
 def build():
@@ -23,22 +21,25 @@ def build():
         for f in os.listdir(DIST):
             fp = os.path.join(DIST, f)
             if f.endswith(".app") or f.endswith(".dmg") or f == "build":
-                p = os.path.join(DIST, f)
-                if os.path.isdir(p):
-                    shutil.rmtree(p)
+                if os.path.isdir(fp):
+                    shutil.rmtree(fp)
                 else:
-                    os.remove(p)
+                    os.remove(fp)
 
-    print("🏗️  使用 PyInstaller 构建 .app...")
+    print("🏗️  使用 PyInstaller 构建 .app (PySide6)...")
     subprocess.run([
-        "/Users/geogre/.browser-use-env/bin/python3", "-m", "PyInstaller",
+        "/Users/geogre/.hermes/hermes-agent/venv/bin/python3",
+        "-m", "PyInstaller",
         "--name", APP_NAME,
         "--onedir",
         "--windowed",
         "--icon", "baigong.icns",
-        "--add-data", "docs:docs",
+        "--add-data", "frontend:frontend",
         "--hidden-import", "server.main",
         "--hidden-import", "agent_sdk",
+        "--hidden-import", "frontend.main_window",
+        "--hidden-import", "frontend.api_client",
+        "--hidden-import", "frontend.theme_manager",
         "--hidden-import", "uvicorn.logging",
         "--hidden-import", "uvicorn.loops.auto",
         "--hidden-import", "uvicorn.loops.asyncio",
@@ -46,7 +47,7 @@ def build():
         "--hidden-import", "uvicorn.protocols.http.h11_impl",
         "--hidden-import", "uvicorn.protocols.websockets.auto",
         "--hidden-import", "uvicorn.protocols.websockets.wsproto_impl",
-        "--collect-all", "webview",
+        "--collect-all", "PySide6",
         "launcher_pyinstaller.py",
     ], check=True, cwd=HERE)
 
@@ -55,14 +56,13 @@ def build():
     with open(PLIST_PATH, "rb") as f:
         plist = plistlib.load(f)
 
-    # 1. 确保 bundle identifier 正确（启动台显示）
     plist["CFBundleIdentifier"] = "com.baigong.agent"
     plist["CFBundleDisplayName"] = "百工 Baigong"
     plist["CFBundleName"] = "百工 Baigong"
-    plist["CFBundleShortVersionString"] = "0.7.1"
-    plist["CFBundleVersion"] = "0.7.1"
+    plist["CFBundleShortVersionString"] = VERSION
+    plist["CFBundleVersion"] = VERSION
 
-    # 2. 添加 NSAllowsLocalNetworking — WKWebView 需要才能连 localhost HTTP
+    # NSAllowsLocalNetworking — 不需要了（PySide6 不走 WKWebView），但保留无害
     if "NSAppTransportSecurity" not in plist:
         plist["NSAppTransportSecurity"] = {}
     plist["NSAppTransportSecurity"]["NSAllowsLocalNetworking"] = True
@@ -71,7 +71,7 @@ def build():
         plistlib.dump(plist, f)
     print("  ✅ Info.plist 已更新")
 
-    # 3. 重新签名（修改 Info.plist 后会破坏签名）
+    # 重新签名
     print("🔏 重新签名...")
     subprocess.run([
         "codesign", "--force", "--deep", "--sign", "-",
