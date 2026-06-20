@@ -22,7 +22,7 @@ from .real_tools import (
 )
 
 # ── 版本信息 ──
-VERSION = "0.6.0"
+VERSION = "0.6.1"
 GITHUB_REPO = "Augustinues/baigong"
 HERE = Path(__file__).parent.parent
 DOCS = HERE / "docs"
@@ -354,12 +354,71 @@ async def api_apply_update():
             return {"ok": False, "error": f"下载失败: {str(e)[:150]}"}
 
         size_mb = os.path.getsize(download_path) / (1024 * 1024)
+
+        # ── 自动安装脚本 ──
+        import signal
+        app_name = "百工 Baigong"
+        install_script = f"""#!/bin/bash
+# 自动安装脚本：挂载 DMG → 替换 .app → 重启
+sleep 2  # 等 API 响应返回前端
+
+DMG="{download_path}"
+APP_NAME="{app_name}"
+
+# 挂载 DMG
+MOUNT_POINT=$(hdiutil attach -nobrowse "$DMG" 2>/dev/null | grep "/Volumes/" | tail -1 | sed 's/.*\\t//')
+if [ -z "$MOUNT_POINT" ]; then
+    # 尝试通过常见的挂载点名称查找
+    MOUNT_POINT=$(ls /Volumes | grep -i "baigong\|百工" | head -1)
+    if [ -n "$MOUNT_POINT" ]; then
+        MOUNT_POINT="/Volumes/$MOUNT_POINT"
+    fi
+fi
+
+if [ -z "$MOUNT_POINT" ] || [ ! -d "$MOUNT_POINT" ]; then
+    # 挂载失败，退回到打开 DMG 让用户手动操作
+    open "$DMG"
+    exit 1
+fi
+
+# 复制到 /Applications（替换旧版）
+rm -rf "/Applications/$APP_NAME.app"
+cp -R "$MOUNT_POINT/$APP_NAME.app" /Applications/
+
+# 卸载 DMG
+hdiutil detach "$MOUNT_POINT" 2>/dev/null
+
+# 删除下载的 DMG
+rm -f "$DMG"
+
+# 启动新版
+open "/Applications/$APP_NAME.app"
+
+# 等新版启动后，杀旧版
+sleep 3
+kill {os.getpid()} 2>/dev/null
+exit 0
+"""
+        # 写入临时脚本并执行
+        script_path = os.path.expanduser("~/.baigong/auto_update.sh")
+        os.makedirs(os.path.dirname(script_path), exist_ok=True)
+        with open(script_path, "w") as f:
+            f.write(install_script)
+        os.chmod(script_path, 0o755)
+
+        # 后台执行安装脚本（分离进程，不阻塞 API 响应）
+        subprocess.Popen(
+            ["/bin/bash", script_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True,
+        )
+
         return {
             "ok": True,
-            "message": f"✅ 已下载最新版 v{latest_ver} ({size_mb:.0f}MB)\n"
-                       f"下载位置：{download_path}\n"
-                       f"请关闭本应用，打开 {download_path} 安装新版",
-            "download_path": download_path,
+            "message": f"✅ 已下载 v{latest_ver} ({size_mb:.0f}MB)，正在安装...\n"
+                       f"新版将自动替换并重启应用",
+            "auto_install": True,
         }
 
     # ── 源码版：git pull + 模块重载 ──

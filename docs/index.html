@@ -507,7 +507,7 @@ async function checkUpdate(){
 async function applyUpdate(){
   $('upBtnDownload').disabled=true;$('upStatus').textContent='⏳ 正在下载更新...';
   try{const r=await api('/api/update/apply',{method:'POST'});
-    if(r.ok){$('upStatus').textContent=r.message;if(r.download_path)$('upPreview').textContent='下载完成，请关闭应用后打开 DMG 安装'}
+    if(r.ok){$('upStatus').textContent=r.message;if(r.auto_install){$('upPreview').textContent='⏳ 应用正在自动安装新版...';$('upBtnDownload').style.display='none';$('upBtnDownload').disabled=false} else if(r.download_path)$('upPreview').textContent='下载完成，请关闭应用后打开 DMG 安装'}
     else{$('upStatus').textContent='❌ '+r.error;$('upBtnDownload').disabled=false}
   }catch(e){$('upStatus').textContent='❌ '+e.message;$('upBtnDownload').disabled=false}
 }
