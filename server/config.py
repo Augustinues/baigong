@@ -32,6 +32,9 @@ DEFAULT_CONFIG = {
             "code_exec",
         ]
     },
+    "theme": {
+        "accent": "amber",
+    },
 }
 
 # 各 Provider 默认配置

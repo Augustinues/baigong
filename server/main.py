@@ -15,14 +15,14 @@ from fastapi.responses import HTMLResponse, StreamingResponse, JSONResponse
 from pydantic import BaseModel
 
 from agent_sdk import ToolRegistry
-from .config import config
+from .config import config, PROVIDER_DEFAULTS
 from .orchestrator import RealOrchestrator
 from .real_tools import (
     WebSearch, WebExtract, FileRead, FileWrite, CodeExec,
 )
 
 # ── 版本信息 ──
-VERSION = "0.2.3"
+VERSION = "0.3.0"
 GITHUB_REPO = "Augustinues/baigong"
 HERE = Path(__file__).parent.parent
 DOCS = HERE / "docs"
@@ -59,6 +59,9 @@ class AgentCreate(BaseModel):
     tools: list[str] = ["web_search", "file_read"]
     system_prompt: str = ""
     model: str = ""
+    provider: str = ""
+    api_key: str = ""
+    base_url: str = ""
 
 class AgentUpdate(BaseModel):
     name: Optional[str] = None
@@ -66,10 +69,18 @@ class AgentUpdate(BaseModel):
     tools: Optional[list[str]] = None
     system_prompt: Optional[str] = None
     model: Optional[str] = None
+    provider: Optional[str] = None
+    api_key: Optional[str] = None
+    base_url: Optional[str] = None
+    temperature: Optional[float] = None
+    max_tokens: Optional[int] = None
 
 class ConfigUpdate(BaseModel):
     key: str
     value: str
+
+class ThemeUpdate(BaseModel):
+    accent: str
 
 
 # ── 前端 ──
@@ -170,6 +181,9 @@ async def api_create_agent(agent: AgentCreate):
         tools=agent.tools,
         system_prompt=agent.system_prompt,
         model=agent.model,
+        provider=agent.provider,
+        api_key=agent.api_key,
+        base_url=agent.base_url,
     )
     return {"ok": True, "agent": result}
 
@@ -179,6 +193,21 @@ async def api_delete_agent(agent_id: str):
         raise HTTPException(404, "Agent 不存在")
     orchestrator.delete_agent(agent_id)
     return {"ok": True}
+
+@app.get("/api/agents/{agent_id}")
+async def api_get_agent(agent_id: str):
+    if agent_id not in orchestrator.agents:
+        raise HTTPException(404, "Agent 不存在")
+    return orchestrator.agents[agent_id].to_dict()
+
+@app.get("/api/providers")
+async def api_get_providers():
+    return PROVIDER_DEFAULTS
+
+@app.post("/api/theme")
+async def api_set_theme(theme: ThemeUpdate):
+    config.set("theme.accent", theme.accent)
+    return {"ok": True, "accent": theme.accent}
 
 @app.patch("/api/agents/{agent_id}")
 async def api_update_agent(agent_id: str, update: AgentUpdate):

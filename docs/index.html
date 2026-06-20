@@ -5,224 +5,203 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>百工 Baigong — Agent 管理</title>
 <style>
-:root{--bg:#0f1117;--bg2:#1a1d27;--bg3:#232734;--border:#2a2e3a;--text:#e2e8f0;--dim:#7c8294;--amber:#f59e0b;--blue:#3b82f6;--green:#10b981;--red:#ef4444;--purple:#8b5cf6}
+:root {
+  --bg: #0f1117; --bg2: #1a1d27; --bg3: #232734; --border: #2a2e3a;
+  --text: #e2e8f0; --dim: #7c8294;
+  --accent: #f59e0b; --accent2: #3b82f6; --green: #10b981; --red: #ef4444; --purple: #8b5cf6;
+  --radius: 8px;
+}
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:13px}
-/* Header */
-.hdr{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border)}
-.hdr-l{display:flex;align-items:center;gap:10px}
-.hdr-l h1{font-size:15px;font-weight:700}
-.hdr-l h1 span{font-weight:300;color:var(--dim);font-size:11px}
-.tabs{display:flex;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);padding:0 12px}
-.tab{padding:8px 16px;font-size:12px;font-weight:600;color:var(--dim);cursor:pointer;border-bottom:2px solid transparent;transition:.15s}
-.tab:hover{color:var(--text)}
-.tab.act{color:var(--amber);border-bottom-color:var(--amber)}
-/* Layout */
-.panel{display:none;padding:12px;gap:12px}
-.panel.act{display:grid}
-.pn{background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden}
-.pn-h{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;font-weight:600}
-/* Buttons */
-.btn{padding:6px 14px;border:none;border-radius:5px;font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
-.btn-pri{background:var(--amber);color:#1a1d27}.btn-pri:hover{background:#d48a08}
+body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+/* ═══ Header ═══ */
+.hdr{display:flex;align-items:center;padding:8px 16px;background:var(--bg2);border-bottom:1px solid var(--border);gap:12px;flex-shrink:0}
+.hdr h1{font-size:16px;font-weight:700;white-space:nowrap}
+.hdr h1 span{font-weight:300;color:var(--dim);font-size:12px}
+/* Theme picker */
+.theme-picker{display:flex;gap:3px;margin-left:auto}
+.theme-dot{width:16px;height:16px;border-radius:50%;border:2px solid transparent;cursor:pointer;transition:.15s}
+.theme-dot.act{border-color:#fff;box-shadow:0 0 6px currentColor}
+.theme-dot:hover{transform:scale(1.2)}
+.hdr-center{display:flex;align-items:center;gap:8px;margin-left:12px}
+#sysStat{font-size:11px;color:var(--dim)}
+.btn{padding:5px 12px;border:none;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;transition:.15s}
+.btn-pri{background:var(--accent);color:#1a1d27}.btn-pri:hover{background:#d48a08}
 .btn-pri:disabled{opacity:.4;cursor:not-allowed}
 .btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#dc2626}
 .btn-ok{background:var(--green);color:#fff}.btn-ok:hover{background:#059669}
 .btn-sm{padding:3px 8px;font-size:10px}
-/* Agent Cards */
-.ag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;padding:8px}
-.ag{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:12px;transition:.15s}
-.ag-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.ag-n{font-size:14px;font-weight:600}
-.ag-r{font-size:11px;color:var(--dim)}
-.ag-s{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0;font-size:11px}
-.ag-s span{padding:2px 6px;background:var(--bg2);border-radius:3px;border:1px solid var(--border)}
-.ag-t{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px}
-.ag-t span{font-size:10px;padding:2px 5px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:3px;color:var(--blue)}
-.ag-st{font-size:11px;padding:2px 6px;border-radius:3px;font-weight:600}
-.ag-st.idle{color:var(--dim)}.ag-st.thinking{color:var(--amber)}.ag-st.acting{color:var(--blue)}.ag-st.done{color:var(--green)}.ag-st.error{color:var(--red)}
-/* Form */
-.fg{margin-bottom:12px}
-.fg label{display:block;font-size:12px;font-weight:600;margin-bottom:4px;color:#cbd5e1}
-.fg input,.fg select,.fg textarea{width:100%;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
-.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--amber)}
-.fg textarea{min-height:60px;resize:vertical}
-/* Tables */
-table{width:100%;border-collapse:collapse;font-size:12px}
-th,td{padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)}
-th{color:var(--dim);font-weight:600;font-size:11px;text-transform:uppercase}
-tr:hover td{background:var(--bg3)}
-/* Modal */
-.mod{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
-.mod.act{display:flex}
-.mod-c{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:24px;max-width:500px;width:90%;max-height:80vh;overflow-y:auto}
-.mod-c h2{font-size:16px;margin-bottom:16px}
-/* Stats */
-.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;padding:8px}
-.st{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px;text-align:center}
-.st-v{font-size:22px;font-weight:700}
-.st-l{font-size:11px;color:var(--dim)}
-/* Log viewer */
-.lb{max-height:400px;overflow-y:auto;padding:6px;font-family:"SF Mono","Menlo",monospace;font-size:11px;display:flex;flex-direction:column;gap:2px}
+/* ═══ Three Column Layout ═══ */
+.main{display:flex;flex:1;overflow:hidden;gap:1px;background:var(--border)}
+.col{display:flex;flex-direction:column;overflow:hidden}
+.col-left{width:260px;flex-shrink:0;background:var(--bg2)}
+.col-center{flex:1;background:var(--bg2)}
+.col-right{width:320px;flex-shrink:0;background:var(--bg2);display:flex;flex-direction:column}
+.col-h{padding:10px 12px;font-size:12px;font-weight:600;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.col-h .cnt{font-size:10px;color:var(--dim);font-weight:400}
+/* ── Left: Agent List ── */
+.ag-list{flex:1;overflow-y:auto;padding:6px}
+.ag-card{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;cursor:pointer;transition:.1s;border:1px solid transparent;margin-bottom:4px}
+.ag-card:hover{background:var(--bg3)}
+.ag-card.sel{border-color:var(--accent);background:rgba(245,158,11,.08)}
+.ag-av{width:32px;height:32px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.ag-av .dot{width:6px;height:6px;border-radius:50%;position:absolute;bottom:0;right:0;border:1px solid var(--bg2)}
+.ag-av-wrap{position:relative}.dot-idle{background:var(--dim)}.dot-thinking{background:var(--accent);animation:pulse .8s infinite}.dot-acting{background:var(--accent2);animation:pulse .8s infinite}.dot-done{background:var(--green)}.dot-error{background:var(--red)}
+.ag-info{flex:1;min-width:0}
+.ag-name{font-size:12px;font-weight:600}
+.ag-role-2{font-size:10px;color:var(--dim);margin-top:1px}
+.ag-extra{font-size:10px;color:var(--dim);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ── Center: Detail/Edit ── */
+.center-content{flex:1;overflow-y:auto;padding:12px}
+.center-empty{display:flex;align-items:center;justify-content:center;height:100%;color:var(--dim);font-size:14px;flex-direction:column;gap:8px}
+.center-empty .big{font-size:32px}
+.edit-section{margin-bottom:16px}
+.edit-section h3{font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.fg{margin-bottom:10px}
+.fg label{display:block;font-size:11px;font-weight:600;margin-bottom:3px;color:#cbd5e1}
+.fg input,.fg select,.fg textarea{width:100%;padding:7px 9px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:12px;outline:none;font-family:inherit}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent)}
+.fg textarea{min-height:50px;resize:vertical}
+.fg-hint{font-size:10px;color:var(--dim);margin-top:2px}
+.tool-grid{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.tool-chk{display:flex;align-items:center;gap:4px;padding:3px 8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;cursor:pointer;font-size:11px;transition:.1s}
+.tool-chk input{display:none}
+.tool-chk.chk{border-color:var(--accent);background:rgba(245,158,11,.1)}
+.tool-chk:hover{background:var(--bg)}
+.edit-actions{display:flex;gap:6px;justify-content:flex-end;padding-top:8px;border-top:1px solid var(--border);margin-top:4px}
+.edit-actions .btn{padding:6px 16px;font-size:12px}
+/* ── Right: Logs + Tasks ── */
+.col-right .col-h{border-bottom-color:transparent}
+.col-right .col:first-child .col-h{border-bottom:1px solid var(--border)}
+.log-box{flex:1;overflow-y:auto;padding:4px 8px;font-family:"SF Mono","Menlo",monospace;font-size:10px}
 .l{display:flex;gap:4px;padding:2px 4px;border-radius:2px}
 .l:hover{background:var(--bg3)}
 .l-t{color:var(--dim);flex-shrink:0}
-.l-m{flex:1}
-.l.action .l-m{color:var(--blue)}.l.result .l-m{color:var(--green)}.l.thought .l-m{color:var(--amber);font-style:italic}
-.l.memory .l-m{color:var(--purple)}.l.error .l-m{color:var(--red)}
+.l-m{flex:1}.l.action .l-m{color:var(--accent2)}.l.result .l-m{color:var(--green)}.l.thought .l-m{color:var(--accent);font-style:italic}.l.memory .l-m{color:var(--purple)}.l.error .l-m{color:var(--red)}
+.task-pane{flex:0 0 auto;max-height:160px;overflow-y:auto;border-top:1px solid var(--border);padding:4px 8px}
+.task-card{padding:4px 6px;margin:2px 0;background:var(--bg3);border-radius:3px;border-left:2px solid var(--dim);font-size:10px}
+.task-card.t-pending{border-left-color:var(--dim)}
+.task-card.t-progress{border-left-color:var(--accent2)}
+.task-card.t-done{border-left-color:var(--green);opacity:.7}
+.task-card .tc-goal{font-weight:500}
+.task-card .tc-meta{font-size:9px;color:var(--dim);margin-top:1px}
 /* Scrollbar */
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
 </style>
 </head>
 <body>
+
+<!-- Header -->
 <div class="hdr">
-  <div class="hdr-l"><h1>🏮 百工 <span>Baigong</span></h1></div>
-  <div style="display:flex;gap:6px">
-    <span id="sysStat" style="font-size:11px;color:var(--dim)">⏳ 加载中...</span>
-    <button class="btn btn-sm btn-ok" id="btnStart">▶ 启动</button>
-    <button class="btn btn-sm btn-red" id="btnStop" style="display:none">⏹ 停止</button>
+  <h1>🏮 百工 <span>Baigong</span></h1>
+  <span id="sysStat">⏳ 加载中...</span>
+  <div class="hdr-center">
+    <button class="btn btn-pri" id="btnStart">▶ 启动</button>
+    <button class="btn btn-red" id="btnStop" style="display:none">⏹ 停止</button>
   </div>
-</div>
-<div class="tabs">
-  <div class="tab act" id="t0" onclick="switchTab(0)">🤖 Agent</div>
-  <div class="tab" id="t1" onclick="switchTab(1)">📋 任务</div>
-  <div class="tab" id="t2" onclick="switchTab(2)">🔧 工具</div>
-  <div class="tab" id="t3" onclick="switchTab(3)">📜 日志</div>
-  <div class="tab" id="t4" onclick="switchTab(4)">⚙️ 配置</div>
+  <div class="theme-picker" id="themePicker"></div>
 </div>
 
-<!-- Agent Panel -->
-<div class="panel act" id="p0" style="grid-template-columns:1fr 300px">
-  <div class="pn">
-    <div class="pn-h"><span>🤖 Agent 列表</span><button class="btn btn-sm btn-pri" onclick="showCreate()">+ 新建 Agent</button></div>
-    <div class="ag-grid" id="agList"></div>
+<!-- Three Columns -->
+<div class="main">
+  <!-- Left: Agents -->
+  <div class="col col-left">
+    <div class="col-h"><span>🤖 Agent</span><span class="cnt" id="agCnt">0</span></div>
+    <div class="ag-list" id="agList"></div>
   </div>
-  <div class="pn">
-    <div class="pn-h">📊 概览</div>
-    <div class="stats" id="stats"></div>
-    <div class="pn-h" style="margin-top:8px">📥 下发任务</div>
-    <div style="padding:8px">
-      <div class="fg"><label>目标 Agent</label><select id="taskAgent" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-size:13px"></select></div>
-      <div class="fg"><label>任务描述</label><textarea id="taskGoal" placeholder="例如：搜索最新的 AI Agent 框架对比" style="min-height:50px"></textarea></div>
-      <button class="btn btn-pri" id="btnTask" onclick="submitTask()" style="width:100%">📤 下发任务</button>
-    </div>
-  </div>
-</div>
 
-<!-- Task Panel -->
-<div class="panel" id="p1" style="grid-template-columns:1fr">
-  <div class="pn">
-    <div class="pn-h"><span>📋 任务看板</span></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;padding:8px">
-      <div style="background:var(--bg3);border-radius:4px;padding:6px">
-        <div style="font-size:10px;font-weight:600;color:var(--dim);margin-bottom:4px">待处理</div>
-        <div id="tp"></div>
-      </div>
-      <div style="background:var(--bg3);border-radius:4px;padding:6px">
-        <div style="font-size:10px;font-weight:600;color:var(--blue);margin-bottom:4px">进行中</div>
-        <div id="tip"></div>
-      </div>
-      <div style="background:var(--bg3);border-radius:4px;padding:6px">
-        <div style="font-size:10px;font-weight:600;color:var(--green);margin-bottom:4px">已完成</div>
-        <div id="tdn"></div>
+  <!-- Center: Detail/Edit -->
+  <div class="col col-center">
+    <div class="col-h"><span id="detailTitle">📝 Agent 详情</span></div>
+    <div class="center-content" id="centerContent">
+      <div class="center-empty">
+        <div class="big">🏮</div>
+        <div>选择一个 Agent 查看或编辑配置</div>
       </div>
     </div>
   </div>
-</div>
 
-<!-- Tool Panel -->
-<div class="panel" id="p2" style="grid-template-columns:1fr">
-  <div class="pn">
-    <div class="pn-h">🔧 可用工具</div>
-    <div style="padding:8px;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px" id="toolList"></div>
-  </div>
-</div>
-
-<!-- Log Panel -->
-<div class="panel" id="p3" style="grid-template-columns:1fr">
-  <div class="pn">
-    <div class="pn-h"><span>📜 实时日志</span><span id="logCnt" style="font-size:10px;color:var(--dim)">0 条</span></div>
-    <div class="lb" id="logList"><div style="text-align:center;color:var(--dim);padding:20px">等待系统启动...</div></div>
-  </div>
-</div>
-
-<!-- Config Panel -->
-<div class="panel" id="p4" style="grid-template-columns:1fr 1fr">
-  <div class="pn">
-    <div class="pn-h">⚙️ LLM 配置</div>
-    <div style="padding:12px;max-width:500px">
-      <div class="fg"><label>模型提供商</label>
-        <select id="cfgProvider" onchange="onCfgProviderChange()">
-          <option value="deepseek">DeepSeek</option>
-          <option value="openai">OpenAI</option>
-          <option value="dashscope">阿里云 DashScope</option>
-          <option value="ollama">Ollama（本地）</option>
-          <option value="openrouter">OpenRouter</option>
-          <option value="custom">自定义</option>
-        </select>
-      </div>
-      <div class="fg"><label>API Key</label><input id="cfgApiKey" type="password"></div>
-      <div class="fg"><label>API 地址</label><input id="cfgApiUrl"></div>
-      <div class="fg"><label>模型</label><select id="cfgModel"></select></div>
-      <div class="fg"><label>温度</label><input id="cfgTemp" type="number" min="0" max="2" step="0.1"></div>
-      <div class="fg"><label>最大 Token</label><input id="cfgTokens" type="number" min="1024" max="65536" step="1024"></div>
-      <button class="btn btn-pri" onclick="saveConfig()">💾 保存配置</button>
-      <div id="cfgStatus" style="margin-top:8px;font-size:12px;color:var(--green)"></div>
+  <!-- Right: Logs + Tasks -->
+  <div class="col col-right">
+    <div class="col" style="flex:1">
+      <div class="col-h"><span>📜 日志</span><span class="cnt" id="logCnt">0</span></div>
+      <div class="log-box" id="logBox"><div style="padding:20px;text-align:center;color:var(--dim)">等待系统启动...</div></div>
     </div>
-  </div>
-  <div>
-    <div class="pn" style="margin-bottom:8px">
-      <div class="pn-h">🔄 版本与更新</div>
-      <div style="padding:12px">
-        <div style="font-size:13px" id="versionInfo">⏳ 获取版本信息...</div>
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <button class="btn btn-sm btn-ok" onclick="checkUpdate()">🔍 检查更新</button>
-          <button class="btn btn-sm btn-pri" id="btnUpdate" style="display:none" onclick="applyUpdate()">⬇️ 更新</button>
-        </div>
-        <div id="updateStatus" style="margin-top:8px;font-size:12px;white-space:pre-wrap"></div>
-      </div>
-    </div>
-    <div class="pn">
-      <div class="pn-h">📦 系统信息</div>
-      <div style="padding:12px;font-size:12px">
-        <div id="sysInfo">加载中...</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Create Agent Modal -->
-<div class="mod" id="createModal">
-  <div class="mod-c">
-    <h2>➕ 新建 Agent</h2>
-    <div class="fg"><label>名字</label><input id="newName" placeholder="例如：研究员"></div>
-    <div class="fg"><label>角色描述</label><input id="newRole" placeholder="例如：网络研究员"></div>
-    <div class="fg"><label>System Prompt</label><textarea id="newPrompt" placeholder="Agent 的系统提示词..." style="min-height:80px"></textarea></div>
-    <div class="fg"><label>工具（逗号分隔）</label><input id="newTools" value="web_search,web_extract,file_read,file_write,code_exec"></div>
-    <div style="display:flex;gap:8px;justify-content:flex-end">
-      <button class="btn btn-sm" onclick="closeCreate()" style="background:var(--bg3);color:var(--text)">取消</button>
-      <button class="btn btn-sm btn-pri" onclick="createAgent()">创建</button>
-    </div>
+    <div class="task-pane" id="taskPane"><div style="color:var(--dim);font-size:10px;text-align:center;padding:8px">暂无任务</div></div>
   </div>
 </div>
 
 <script>
 const $=id=>document.getElementById(id);
-let es=null, timer=null;
+const T=text=>document.createTextNode(text);
 
-// ── Tab 切换 ──
-function switchTab(n){
-  document.querySelectorAll('.tab').forEach((e,i)=>{e.classList.toggle('act',i===n)});
-  document.querySelectorAll('.panel').forEach((e,i)=>{e.classList.toggle('act',i===n)});
-}
+// ── Color presets ──
+const THEMES={
+  amber:"#f59e0b",amber2:"#d48a08",
+  blue:"#3b82f6",blue2:"#2563eb",
+  green:"#10b981",green2:"#059669",
+  purple:"#8b5cf6",purple2:"#7c3aed",
+  red:"#ef4444",red2:"#dc2626",
+  pink:"#ec4899",pink2:"#db2777",
+  cyan:"#06b6d4",cyan2:"#0891b2",
+};
 
-// ── API ──
+// ── API helper ──
 async function api(path,opts={}){
   const r=await fetch(path,{headers:{'Content-Type':'application/json'},...opts});
   return r.json();
 }
 
-// ── 启动/停止 ──
+// ── State ──
+let es=null, timer=null;
+let state={agents:[],logs:[],tasks:[]};
+let selectedAgent=null;
+let providers={};
+
+// ── Theme ──
+function initThemePicker(){
+  const el=$('themePicker');
+  const names=Object.keys(THEMES).filter((_,i)=>i%2===0);
+  const cur=localStorage.getItem('baigong_theme')||'amber';
+  el.innerHTML=names.map(n=>`<div class="theme-dot ${n===cur?'act':''}" data-theme="${n}" style="background:${THEMES[n]}" onclick="setTheme('${n}')" title="${n}"></div>`).join('');
+  applyTheme(cur);
+}
+function setTheme(name){
+  localStorage.setItem('baigong_theme',name);
+  applyTheme(name);
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.toggle('act',d.dataset.theme===name));
+  // Save to backend
+  api('/api/theme',{method:'POST',body:JSON.stringify({accent:name})}).catch(()=>{});
+}
+function applyTheme(name){
+  const c=THEMES[name]||'#f59e0b';
+  const c2=THEMES[name+'2']||'#d48a08';
+  document.documentElement.style.setProperty('--accent',c);
+  document.documentElement.style.setProperty('--accent2',c2);
+}
+
+// ── Init ──
+async function init(){
+  initThemePicker();
+  // Load providers
+  providers=await api('/api/providers')||{};
+  // Load state
+  const cfg=await api('/api/config');
+  if(cfg.llm&&cfg.llm.api_key){
+    $('sysStat').textContent='已配置';
+    if(cfg.agents&&cfg.agents.length){
+      $('btnStart').click();
+    }
+  }else{
+    $('sysStat').textContent='⚠️ 未配置 API Key';
+  }
+  // Poll
+  setInterval(fetchState,3000);
+  // Initial fetch
+  await fetchState();
+}
+
+// ── Start / Stop ──
 $('btnStart').onclick=async function(){
   this.disabled=true;$('sysStat').textContent='⏳ 启动中...';
   const r=await api('/api/start',{method:'POST'});
@@ -231,7 +210,7 @@ $('btnStart').onclick=async function(){
     $('sysStat').textContent='✅ 运行中';
     connectSSE();
   }else{
-    $('sysStat').textContent='❌ '+(r.error||'启动失败');
+    $('sysStat').textContent='❌ '+(r.error||'失败');
     this.disabled=false;
   }
 };
@@ -246,223 +225,219 @@ $('btnStop').onclick=async function(){
 function connectSSE(){
   if(es)es.close();
   es=new EventSource('/api/events');
-  es.onmessage=function(e){
-    try{render(JSON.parse(e.data))}catch(err){}
-  };
+  es.onmessage=function(e){try{render(JSON.parse(e.data))}catch(err){}};
   es.onerror=function(){};
   fetchState();
 }
+
+// ── Fetch state ──
 async function fetchState(){
   const s=await api('/api/state');
   if(s)render(s);
 }
 
-// ── 渲染 ──
+// ── Render ──
 function render(s){
-  if(!s)return;
-  renderAgents(s);
-  renderStats(s);
-  renderTasks(s);
-  renderTools(s);
+  state=s;
+  renderAgentList(s);
   renderLogs(s);
+  renderTasks(s);
+  // If selected agent is still in list, update detail
+  if(selectedAgent&&s.agents){
+    const a=s.agents.find(x=>x.id===selectedAgent.id);
+    if(a){selectedAgent=a;renderDetail(a);}
+  }
 }
-function renderAgents(s){
+function renderAgentList(s){
+  const agents=s.agents||[];
+  $('agCnt').textContent=agents.length;
   const el=$('agList');
-  const agents=s.agents||[];
-  if(!agents.length){el.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim)">暂无 Agent，点击「新建 Agent」创建</div>';return}
+  if(!agents.length){
+    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--dim);font-size:12px">暂无 Agent<br><span style="font-size:10px">启动系统后自动创建</span></div>';
+    return;
+  }
   el.innerHTML=agents.map(a=>`
-    <div class="ag">
-      <div class="ag-h"><div><div class="ag-n">${a.name||'?'}</div><div class="ag-r">${a.role||'?'}</div></div>
-      <div><span class="ag-st ${a.status||'idle'}">${a.status||'idle'}</span></div></div>
-      <div class="ag-s"><span>🔧 ${a.tool_calls||0}</span><span>✅ ${a.tasks_done||0}</span><span>🧠 ${(a.memories||[]).length}</span></div>
-      <div style="font-size:11px;color:${a.status==='thinking'||a.status==='acting'?'var(--blue)':'var(--dim)'};margin:4px 0">${a.action||'等待任务...'}</div>
-      <div class="ag-t">${(a.tools||[]).map(t=>`<span>${t}</span>`).join('')}</div>
-    </div>
-  `).join('');
-
-  // 更新任务下拉
-  const sel=$('taskAgent');
-  sel.innerHTML='<option value="">自动选择</option>'+agents.filter(a=>a.status==='idle').map(a=>`<option value="${a.id||''}">${a.name||a.id}</option>`).join('');
-}
-function renderStats(s){
-  const agents=s.agents||[];
-  $('stats').innerHTML=`
-    <div class="st"><div class="st-v">${agents.length}</div><div class="st-l">Agent</div></div>
-    <div class="st"><div class="st-v">${agents.filter(a=>a.status==='idle').length}</div><div class="st-l">空闲</div></div>
-    <div class="st"><div class="st-v">${agents.filter(a=>a.status==='thinking'||a.status==='acting').length}</div><div class="st-l">工作中</div></div>
-    <div class="st"><div class="st-v">${(s.tasks||[]).length}</div><div class="st-l">任务</div></div>
-    <div class="st"><div class="st-v">${(s.tools ? Object.keys(s.tools).length : 0)}</div><div class="st-l">工具</div></div>
-    <div class="st"><div class="st-v">${(s.skills||[]).length}</div><div class="st-l">Skill</div></div>
-  `;
-}
-function renderTasks(s){
-  const tasks=s.tasks||[];
-  const p=[],ip=[],dn=[];
-  tasks.forEach(t=>{
-    const h=`<div style="background:var(--bg2);border:1px solid var(--border);border-radius:3px;padding:4px 6px;margin:2px 0;font-size:10px"><div style="font-weight:500">${t.goal||t.id}</div><div style="color:var(--dim);font-size:9px">${t.assignee||''}</div></div>`;
-    if(t.status==='pending')p.push(h);else if(t.status==='in_progress')ip.push(h);else dn.push(h);
-  });
-  $('tp').innerHTML=p.join('')||'<div style="font-size:10px;color:var(--dim);text-align:center;padding:8px">无</div>';
-  $('tip').innerHTML=ip.join('')||'<div style="font-size:10px;color:var(--dim);text-align:center;padding:8px">无</div>';
-  $('tdn').innerHTML=dn.join('')||'<div style="font-size:10px;color:var(--dim);text-align:center;padding:8px">无</div>';
-}
-function renderTools(s){
-  const tools=s.tools||{};
-  const el=$('toolList');
-  if(!Object.keys(tools).length){el.innerHTML='<div style="color:var(--dim);font-size:12px">暂无工具</div>';return}
-  el.innerHTML=Object.values(tools).map(t=>`
-    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px">
-      <div style="font-size:12px;font-weight:600">${t.name||t.display_name||'?'}</div>
-      <div style="font-size:10px;color:var(--dim);margin:2px 0">${t.category||''}</div>
-      <div style="font-size:11px;color:var(--text)">${t.description||''}</div>
+    <div class="ag-card ${selectedAgent&&selectedAgent.id===a.id?'sel':''}" onclick="selectAgent('${a.id}')">
+      <div class="ag-av-wrap"><div class="ag-av" style="background:rgba(245,158,11,.1);border-radius:6px">🤖</div><span class="dot dot-${a.status||'idle'}"></span></div>
+      <div class="ag-info">
+        <div class="ag-name">${a.name||'?'}</div>
+        <div class="ag-role-2">${a.role||'?'} · ${a.model||'默认模型'}</div>
+        <div class="ag-extra">${a.action||'等待任务...'}</div>
+      </div>
     </div>
   `).join('');
 }
 function renderLogs(s){
   const logs=s.logs||[];
-  if(!logs.length)return;
-  $('logList').innerHTML=logs.slice(-100).map(l=>`
+  $('logCnt').textContent=logs.length;
+  const el=$('logBox');
+  if(!logs.length){el.innerHTML='<div style="padding:20px;text-align:center;color:var(--dim)">等待系统启动...</div>';return}
+  el.innerHTML=logs.slice(-200).map(l=>`
     <div class="l ${l.type||''}"><span class="l-t">${l.t||''}</span><span class="l-m">${l.msg||''}</span></div>
   `).join('');
-  $('logList').scrollTop=$('logList').scrollHeight;
-  $('logCnt').textContent=logs.length+' 条';
+  el.scrollTop=el.scrollHeight;
+}
+function renderTasks(s){
+  const tasks=s.tasks||[];
+  const el=$('taskPane');
+  if(!tasks.length){el.innerHTML='<div style="color:var(--dim);font-size:10px;text-align:center;padding:8px">暂无任务</div>';return}
+  el.innerHTML=tasks.slice(-10).map(t=>`
+    <div class="task-card t-${t.status||'pending'}">
+      <div class="tc-goal">${t.goal||t.id||'?'}</div>
+      <div class="tc-meta">${t.assignee||''}${t.progress?' · '+(t.progress*100).toFixed(0)+'%':''}</div>
+    </div>
+  `).join('');
 }
 
-// ── Agent CRUD ──
-function showCreate(){$('createModal').classList.add('act')}
-function closeCreate(){$('createModal').classList.remove('act')}
-async function createAgent(){
-  const name=$('newName').value.trim()||'新Agent';
-  const role=$('newRole').value.trim()||'worker';
-  const tools=$('newTools').value.split(',').map(s=>s.trim()).filter(Boolean);
-  const prompt=$('newPrompt').value.trim()||`你是${name}，你的角色是${role}。`;
-  const r=await api('/api/agents',{method:'POST',body:JSON.stringify({name,role,tools,system_prompt:prompt})});
+// ── Select Agent ──
+async function selectAgent(id){
+  // Try to get full detail from API
+  try{
+    const a=await api('/api/agents/'+id);
+    if(a&&a.id){selectedAgent=a;renderDetail(a);return}
+  }catch(e){}
+  // Fallback: find in state
+  const a=(state.agents||[]).find(x=>x.id===id);
+  if(a){selectedAgent=a;renderDetail(a)}
+}
+
+// ── Render Detail / Edit ──
+function renderDetail(a){
+  $('detailTitle').textContent='✏️ '+a.name;
+  const tools=a.tools||[];
+  const allTools=Object.keys((state.tools||{}));
+  const provider=a.provider||'';
+  const currentTheme=localStorage.getItem('baigong_theme')||'amber';
+  const providerKeys=Object.keys(providers);
+
+  $('centerContent').innerHTML=`
+    <!-- Basic -->
+    <div class="edit-section">
+      <h3>📋 基本信息</h3>
+      <div class="fg"><label>名字</label><input id="eName" value="${escHtml(a.name)}"></div>
+      <div class="fg"><label>角色描述</label><input id="eRole" value="${escHtml(a.role||'')}"></div>
+    </div>
+
+    <!-- System Prompt -->
+    <div class="edit-section">
+      <h3>🧠 人设 / System Prompt</h3>
+      <div class="fg">
+        <textarea id="ePrompt" rows="6">${escHtml(a.system_prompt||'')}</textarea>
+      </div>
+    </div>
+
+    <!-- LLM -->
+    <div class="edit-section">
+      <h3>🔌 LLM 配置</h3>
+      <div class="fg"><label>提供商</label>
+        <select id="eProvider" onchange="onProviderChange()">
+          <option value="">使用全局配置</option>
+          ${providerKeys.map(k=>`<option value="${k}" ${provider===k?'selected':''}>${k}</option>`).join('')}
+        </select>
+      </div>
+      <div class="fg"><label>模型</label>
+        <select id="eModel">
+          <option value="">使用全局配置</option>
+          ${provider ? (providers[provider]?.models||[]).map(m=>`<option value="${m}" ${a.model===m?'selected':''}>${m}</option>`).join('') : ''}
+        </select>
+      </div>
+      <div class="fg"><label>API Key</label>
+        <input id="eApiKey" type="password" value="${escHtml(a.api_key||'')}" placeholder="留空使用全局 API Key">
+        <div class="fg-hint">留空则使用全局配置中的 API Key</div>
+      </div>
+      <div class="fg"><label>API 地址</label>
+        <input id="eBaseUrl" value="${escHtml(a.base_url||'')}" placeholder="留空使用提供商默认地址">
+      </div>
+    </div>
+
+    <!-- Tools -->
+    <div class="edit-section">
+      <h3>🔧 工具</h3>
+      <div class="tool-grid" id="toolGrid">
+        ${(allTools.length?allTools:['web_search','web_extract','file_read','file_write','code_exec']).map(t=>{
+          const checked=tools.includes(t);
+          return `<label class="tool-chk ${checked?'chk':''}" onclick="this.classList.toggle('chk')">
+            <input type="checkbox" ${checked?'checked':''} value="${t}"> ${t}
+          </label>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="edit-actions">
+      <button class="btn btn-red btn-sm" onclick="deleteAgent('${a.id}')">🗑 删除</button>
+      <button class="btn btn-pri" onclick="saveAgent('${a.id}')">💾 保存</button>
+    </div>
+  `;
+}
+
+function escHtml(s){
+  if(!s)return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Provider change ──
+function onProviderChange(){
+  const p=$('eProvider').value;
+  const sel=$('eModel');
+  if(!p||!providers[p]){
+    sel.innerHTML='<option value="">使用全局配置</option>';
+    return;
+  }
+  sel.innerHTML='<option value="">使用全局配置</option>'+providers[p].models.map(m=>`<option value="${m}">${m}</option>`).join('');
+}
+
+// ── Save Agent ──
+async function saveAgent(id){
+  const name=$('eName').value.trim();
+  const role=$('eRole').value.trim();
+  const prompt=$('ePrompt').value.trim();
+  const provider=$('eProvider').value;
+  const model=$('eModel').value;
+  const apiKey=$('eApiKey').value;
+  const baseUrl=$('eBaseUrl').value;
+
+  // Get checked tools
+  const tools=[];
+  document.querySelectorAll('#toolGrid input:checked').forEach(cb=>tools.push(cb.value));
+
+  const body={};
+  if(name)body.name=name;
+  if(role)body.role=role;
+  if(prompt)body.system_prompt=prompt;
+  body.tools=tools;
+  body.provider=provider||null;
+  body.model=model||null;
+  body.api_key=apiKey||null;
+  body.base_url=baseUrl||null;
+
+  const r=await api('/api/agents/'+id,{method:'PATCH',body:JSON.stringify(body)});
   if(r.ok){
-    closeCreate();
-    $('newName').value='';$('newRole').value='';$('newPrompt').value='';
+    $('detailTitle').textContent='✏️ '+name;
+    $('sysStat').textContent='✅ Agent 已保存';
+    setTimeout(()=>{$('sysStat').textContent='✅ 运行中';},2000);
+    await fetchState();
+    // Re-select to refresh
+    selectAgent(id);
+  }else{
+    $('sysStat').textContent='❌ 保存失败';
+  }
+}
+
+// ── Delete Agent ──
+async function deleteAgent(id){
+  if(!confirm('确定要删除这个 Agent 吗？'))return;
+  const r=await api('/api/agents/'+id,{method:'DELETE'});
+  if(r.ok){
+    selectedAgent=null;
+    $('centerContent').innerHTML='<div class="center-empty"><div class="big">🏮</div><div>选择一个 Agent 查看或编辑配置</div></div>';
+    $('detailTitle').textContent='📝 Agent 详情';
     await fetchState();
   }
 }
 
-// ── 任务 ──
-async function submitTask(){
-  const goal=$('taskGoal').value.trim();
-  const agent=$('taskAgent').value;
-  if(!goal)return;
-  $('btnTask').disabled=true;$('btnTask').textContent='⏳ 执行中...';
-  await api('/api/task',{method:'POST',body:JSON.stringify({goal,agent_id:agent})});
-  $('taskGoal').value='';
-  setTimeout(()=>{$('btnTask').disabled=false;$('btnTask').textContent='📤 下发任务'},2000);
-}
-
-// ── Config ──
-const PROVIDERS={
-  deepseek:{url:"https://api.deepseek.com/v1",models:["deepseek-v4-flash","deepseek-v4-pro"],defaultModel:"deepseek-v4-flash"},
-  openai:{url:"https://api.openai.com/v1",models:["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"],defaultModel:"gpt-4o-mini"},
-  dashscope:{url:"https://dashscope.aliyuncs.com/compatible-mode/v1",models:["qwen-plus","qwen-turbo","qwen-max","qwen3-vl-plus"],defaultModel:"qwen-plus"},
-   ollama:{url:"http://localhost:11434/v1",models:["llama3","qwen2.5","mistral","deepseek-r1"],defaultModel:"llama3"},
-   anthropic:{url:"https://api.anthropic.com/v1",models:["claude-sonnet-4","claude-haiku-3.5","claude-opus-4"],defaultModel:"claude-sonnet-4"},
-  openrouter:{url:"https://openrouter.ai/api/v1",models:["openai/gpt-4o","anthropic/claude-sonnet-4","google/gemini-2.0-flash"],defaultModel:"openai/gpt-4o"},
-  custom:{url:"",models:["gpt-4o","deepseek-v4-flash","qwen-plus"],defaultModel:"gpt-4o"}
-};
-function onCfgProviderChange(){
-  const p=$('cfgProvider').value;
-  const info=PROVIDERS[p];
-  if(!info)return;
-  $('cfgApiUrl').value=info.url;
-  $('cfgModel').innerHTML=info.models.map(m=>`<option value="${m}">${m}</option>`).join('');
-  $('cfgModel').value=info.defaultModel;
-}
-async function saveConfig(){
-  await api('/api/config',{method:'POST',body:JSON.stringify({key:'llm.provider',value:$('cfgProvider').value})});
-  await api('/api/config',{method:'POST',body:JSON.stringify({key:'llm.api_key',value:$('cfgApiKey').value})});
-  await api('/api/config',{method:'POST',body:JSON.stringify({key:'llm.base_url',value:$('cfgApiUrl').value})});
-  await api('/api/config',{method:'POST',body:JSON.stringify({key:'llm.model',value:$('cfgModel').value})});
-  await api('/api/config',{method:'POST',body:JSON.stringify({key:'llm.temperature',value:$('cfgTemp').value})});
-  await api('/api/config',{method:'POST',body:JSON.stringify({key:'llm.max_tokens',value:$('cfgTokens').value})});
-  $('cfgStatus').textContent='✅ 配置已保存';
-  setTimeout(()=>{$('cfgStatus').textContent=''},3000);
-}
-
-// ── 更新 ──
-async function checkUpdate(){
-  $('updateStatus').textContent='⏳ 检查中...';
-  try{
-    const r=await api('/api/update/check');
-    $('versionInfo').innerHTML=`当前版本: <b>v${r.current}</b> | 最新版: <b>v${r.latest}</b>`;
-    if(r.has_update){
-      $('btnUpdate').style.display='inline-block';
-      const modeInfo=r.is_frozen?'(App打包版,下载DMG安装)':'(源码版,git pull)';
-      $('updateStatus').textContent=`有新版本 v${r.latest} 可用！${modeInfo}\n${(r.body||'').slice(0,200)}`;
-    }else{
-      $('btnUpdate').style.display='none';
-      $('updateStatus').textContent=r.error?'⚠️ '+r.error:'✅ 已是最新版本';
-    }
-  }catch(e){$('updateStatus').textContent='❌ 检查失败: '+e.message}
-}
-async function applyUpdate(){
-  $('btnUpdate').disabled=true;$('updateStatus').textContent='⏳ 正在下载更新...';
-  try{
-    const r=await api('/api/update/apply',{method:'POST'});
-    if(r.ok){
-      $('updateStatus').textContent=r.message;
-      $('btnUpdate').style.display='none';
-      if(r.download_path){
-        // 打包版：显示下载完成，打开下载文件夹
-        const msg='✅ 更新包已下载到：'+r.download_path+'\n请关闭本应用后打开安装';
-        $('updateStatus').textContent=msg;
-      }else{
-        // 源码版：重载页面
-        setTimeout(()=>location.reload(),2000);
-      }
-    }else{
-      $('updateStatus').textContent='❌ 更新失败: '+r.error;
-      $('btnUpdate').disabled=false;
-    }
-  }catch(e){$('updateStatus').textContent='❌ 更新失败: '+e.message;$('btnUpdate').disabled=false}
-}
-
-// ── 加载配置 ──
-async function loadConfig(){
-  const cfg=await api('/api/config');
-  if(cfg.llm){
-    $('cfgApiKey').value=cfg.llm.api_key||'';
-    $('cfgApiUrl').value=cfg.llm.base_url||'';
-    $('cfgProvider').value=cfg.llm.provider||'deepseek';
-    $('cfgModel').value=cfg.llm.model||'deepseek-v4-flash';
-    $('cfgTemp').value=cfg.llm.temperature||0.7;
-    $('cfgTokens').value=cfg.llm.max_tokens||4096;
-    onCfgProviderChange();
-    $('cfgModel').value=cfg.llm.model||'deepseek-v4-flash';
-  }
-  // 版本信息
-  try{
-    const ver=await api('/api/update/status');
-    $('versionInfo').innerHTML=`当前版本: <b>v${ver.version||'?'}</b><br><small>${(ver.commits||'').replace(/\\n/g,'<br>')}</small>`;
-    $('sysInfo').innerHTML=`<div>源码目录: ~/Desktop/涂涂/项目开发/agent-company</div><div>启动方式: 双击 .app</div><div>API: ${cfg.llm?.provider||'未配置'}</div>`;
-  }catch(e){$('versionInfo').textContent='⚠️ 版本信息不可用'}
-}
-
-// ── 初始化 ──
-async function init(){
-  // 检查是否已配置
-  const cfg=await api('/api/config');
-  if(cfg.llm&&cfg.llm.api_key){
-    $('sysStat').textContent='已配置，点击启动';
-    // 如果有 Agent，直接启动
-    if(cfg.agents&&cfg.agents.length){
-      $('btnStart').click();
-    }
-  }else{
-    $('sysStat').textContent='⚠️ 未配置 API Key，请前往「配置」页设置';
-  }
-  loadConfig();
-  // 轮询状态
-  setInterval(fetchState, 3000);
-}
+// ── Load ──
 init();
-
-$('taskGoal').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.metaKey)submitTask()});
 </script>
 </body>
 </html>

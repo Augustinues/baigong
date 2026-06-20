@@ -19,7 +19,9 @@ class AgentInstance:
     """一个真实的 Agent 实例"""
 
     def __init__(self, agent_id: str, name: str, role: str, model: str,
-                 tools: list[str], system_prompt: str, llm: LLMClient):
+                 tools: list[str], system_prompt: str, llm: LLMClient,
+                 provider: str = "", api_key: str = "", base_url: str = "",
+                 temperature: float = 0.0, max_tokens: int = 0):
         self.id = agent_id
         self.name = name
         self.role = role
@@ -27,6 +29,11 @@ class AgentInstance:
         self.tools = tools
         self.system_prompt = system_prompt
         self.llm = llm
+        self.provider = provider
+        self.api_key = api_key
+        self.base_url = base_url
+        self.temperature = temperature
+        self.max_tokens = max_tokens
 
         # 运行时状态
         self.status = "idle"  # idle / thinking / acting / done / error
@@ -50,7 +57,12 @@ class AgentInstance:
             "tasks_done": self.tasks_done,
             "messages": self.messages[-20:],
             "memories": self.memories[-10:],
-            "system_prompt": self.system_prompt[:200],
+            "system_prompt": self.system_prompt,
+            "provider": self.provider,
+            "api_key": self.api_key,
+            "base_url": self.base_url,
+            "temperature": self.temperature,
+            "max_tokens": self.max_tokens,
         }
 
 
@@ -96,6 +108,11 @@ class RealOrchestrator:
             tools=agent_cfg.get("tools", ["web_search", "file_read"]),
             system_prompt=agent_cfg.get("system_prompt", "你是一个AI助手。"),
             llm=self.llm_client,
+            provider=agent_cfg.get("provider", ""),
+            api_key=agent_cfg.get("api_key", ""),
+            base_url=agent_cfg.get("base_url", ""),
+            temperature=agent_cfg.get("temperature", 0.0),
+            max_tokens=agent_cfg.get("max_tokens", 0),
         )
         self.agents[agent_id] = agent
         return agent
@@ -129,7 +146,10 @@ class RealOrchestrator:
     # ── Agent CRUD ──
 
     def create_agent(self, name: str, role: str, tools: list[str],
-                     system_prompt: str = "", model: str = "") -> dict:
+                     system_prompt: str = "", model: str = "",
+                     provider: str = "", api_key: str = "",
+                     base_url: str = "", temperature: float = 0.0,
+                     max_tokens: int = 0) -> dict:
         agent_id = f"agent_{uuid.uuid4().hex[:6]}"
         agent_cfg = {
             "id": agent_id,
@@ -138,6 +158,11 @@ class RealOrchestrator:
             "tools": tools,
             "system_prompt": system_prompt or f"你是{name}，你的角色是{role}。使用可用工具完成任务。",
             "model": model or config.get("llm.model", "deepseek-v4-flash"),
+            "provider": provider,
+            "api_key": api_key,
+            "base_url": base_url,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
         }
         self._create_agent_instance(agent_cfg)
         config.add_agent(agent_cfg)
