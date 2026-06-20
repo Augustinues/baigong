@@ -7,7 +7,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0f1117;color:#e2e8f0;min-height:100vh;display:flex;align-items:center;justify-content:center}
-.c{max-width:560px;width:90%;background:#1a1d27;border:1px solid #2a2e3a;border-radius:12px;padding:40px;animation:fade .3s}
+.c{max-width:580px;width:90%;background:#1a1d27;border:1px solid #2a2e3a;border-radius:12px;padding:40px;animation:fade .3s}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 h1{font-size:22px;text-align:center;margin-bottom:4px}
 h1 span{color:#f59e0b}
@@ -22,13 +22,11 @@ input::placeholder{color:#4a4f5e}
 .hint{font-size:11px;color:#7c8294;margin-top:4px}
 .form-group{margin-bottom:16px}
 .btn{padding:10px 20px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer;transition:.15s;width:100%}
-.btn-pri{background:#f59e0b;color:#1a1d27}.btn-pri:hover{background:#d48a08}
-.btn-pri:disabled{opacity:.4;cursor:not-allowed}
+.btn-pri{background:#f59e0b;color:#1a1d27}.btn-pri:hover{background:#d48a08}.btn-pri:disabled{opacity:.4;cursor:not-allowed}
 .btn-sec{background:#232734;color:#e2e8f0;border:1px solid #2a2e3a}.btn-sec:hover{background:#2a2e3a}
 .stat{display:none;padding:12px;border-radius:6px;font-size:13px;margin-top:12px;white-space:pre-wrap}
 .stat.ok{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);color:#10b981;display:block}
 .stat.er{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#ef4444;display:block}
-.mt{display:none;margin-top:16px}
 </style>
 </head>
 <body>
@@ -42,16 +40,28 @@ input::placeholder{color:#4a4f5e}
 <h1>🏮 百工 <span>Baigong</span></h1>
 <p class="sub">首次使用，先配置一下</p>
 
-<!-- Step 1: API Key -->
+<!-- Step 1: Provider + API Key -->
 <div class="pg" id="pg1">
   <div class="form-group">
-    <label>🔑 DeepSeek API Key</label>
+    <label>🤖 LLM 提供商</label>
+    <select id="provider" onchange="onProviderChange()">
+      <option value="deepseek">DeepSeek</option>
+      <option value="openai">OpenAI</option>
+      <option value="dashscope">阿里云 DashScope（通义千问）</option>
+      <option value="ollama">Ollama（本地）</option>
+      <option value="openrouter">OpenRouter（聚合）</option>
+      <option value="custom">自定义（OpenAI 兼容）</option>
+    </select>
+    <div class="hint" id="providerHint">申请地址：platform.deepseek.com → API Keys</div>
+  </div>
+  <div class="form-group">
+    <label>🔑 API Key</label>
     <input id="apiKey" type="password" placeholder="sk-..." autofocus>
-    <div class="hint">申请地址：platform.deepseek.com → API Keys</div>
+    <div class="hint" id="keyHint"></div>
   </div>
   <div class="form-group">
     <label>🌐 API 地址</label>
-    <input id="apiUrl" value="https://api.deepseek.com/v1" placeholder="https://api.deepseek.com/v1">
+    <input id="apiUrl" placeholder="https://api.deepseek.com/v1">
   </div>
   <div class="stat" id="stat1"></div>
   <button class="btn btn-pri" onclick="next1()">下一步</button>
@@ -60,19 +70,16 @@ input::placeholder{color:#4a4f5e}
 <!-- Step 2: Model -->
 <div class="pg" id="pg2" style="display:none">
   <div class="form-group">
-    <label>🤖 默认模型</label>
-    <select id="model">
-      <option value="deepseek-chat">deepseek-chat（推荐）</option>
-      <option value="deepseek-reasoner">deepseek-reasoner</option>
-    </select>
+    <label>🤖 模型</label>
+    <select id="model"></select>
   </div>
   <div class="form-group">
-    <label>🎯 温度（0-2，越高越有创造力）</label>
+    <label>🎯 温度（0-2）</label>
     <input id="temperature" type="number" value="0.7" min="0" max="2" step="0.1">
   </div>
   <div class="form-group">
     <label>📝 最大 Token</label>
-    <input id="maxTokens" type="number" value="4096" min="1024" max="32768" step="1024">
+    <input id="maxTokens" type="number" value="4096" min="1024" max="65536" step="1024">
   </div>
   <button class="btn btn-sec" onclick="prev(1)" style="margin-bottom:8px">上一步</button>
   <button class="btn btn-pri" onclick="next2()">下一步</button>
@@ -81,15 +88,15 @@ input::placeholder{color:#4a4f5e}
 <!-- Step 3: Create Agent -->
 <div class="pg" id="pg3" style="display:none">
   <div class="form-group">
-    <label>🤖 创建你的第一个 Agent</label>
+    <label>🤖 Agent 名字</label>
     <input id="agentName" value="助手" placeholder="Agent 名字">
   </div>
   <div class="form-group">
     <label>📋 角色描述</label>
-    <input id="agentRole" value="通用助手" placeholder="例如：研究员、编辑、程序员">
+    <input id="agentRole" value="通用助手" placeholder="研究员、编辑、程序员">
   </div>
   <div class="form-group">
-    <label>🔧 工具</label>
+    <label>🔧 可用工具</label>
     <div style="display:flex;flex-wrap:wrap;gap:6px">
       <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> web_search</label>
       <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> web_extract</label>
@@ -97,7 +104,6 @@ input::placeholder{color:#4a4f5e}
       <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> file_write</label>
       <label style="display:flex;align-items:center;gap:4px;font-size:12px;background:#232734;padding:4px 8px;border-radius:4px"><input type="checkbox" checked disabled> code_exec</label>
     </div>
-    <div class="hint">启动后可在管理面板中修改</div>
   </div>
   <button class="btn btn-sec" onclick="prev(2)" style="margin-bottom:8px">上一步</button>
   <button class="btn btn-pri" onclick="next3()">下一步</button>
@@ -115,8 +121,26 @@ input::placeholder{color:#4a4f5e}
 
 <script>
 const $=id=>document.getElementById(id);
-const steps=[1,2,3,4];
-let cur=1;
+const PROVIDERS={
+  deepseek:{url:"https://api.deepseek.com/v1",models:["deepseek-v4-flash","deepseek-reasoner"],defaultModel:"deepseek-v4-flash",note:"申请地址：platform.deepseek.com → API Keys",keyPlaceholder:"sk-..."},
+  openai:{url:"https://api.openai.com/v1",models:["gpt-4o","gpt-4o-mini","gpt-4-turbo","gpt-3.5-turbo"],defaultModel:"gpt-4o-mini",note:"申请地址：platform.openai.com → API Keys",keyPlaceholder:"sk-..."},
+  dashscope:{url:"https://dashscope.aliyuncs.com/compatible-mode/v1",models:["qwen-plus","qwen-turbo","qwen-max","qwen3-vl-plus"],defaultModel:"qwen-plus",note:"申请地址：bailian.console.aliyun.com → API Keys",keyPlaceholder:"sk-..."},
+  ollama:{url:"http://localhost:11434/v1",models:["llama3","qwen2.5","mistral","deepseek-r1"],defaultModel:"llama3",note:"本地 Ollama，确保 ollama serve 已运行",keyPlaceholder:"任意值或留空"},
+  openrouter:{url:"https://openrouter.ai/api/v1",models:["openai/gpt-4o","anthropic/claude-sonnet-4","google/gemini-2.0-flash"],defaultModel:"openai/gpt-4o",note:"申请地址：openrouter.ai → Keys",keyPlaceholder:"sk-..."},
+  custom:{url:"",models:["gpt-4o","deepseek-v4-flash","qwen-plus"],defaultModel:"gpt-4o",note:"输入你的 API 地址和 Key",keyPlaceholder:"API Key"}
+};
+
+function onProviderChange(){
+  const p=$('provider').value;
+  const info=PROVIDERS[p];
+  if(!info)return;
+  $('apiUrl').value=info.url;
+  $('providerHint').textContent=info.note;
+  $('apiKey').placeholder=info.keyPlaceholder;
+  // 更新模型列表
+  const sel=$('model');
+  sel.innerHTML=info.models.map(m=>`<option value="${m}"${m===info.defaultModel?' selected':''}>${m}</option>`).join('');
+}
 
 function showStep(n){
   document.querySelectorAll('.pg').forEach(e=>e.style.display='none');
@@ -127,21 +151,22 @@ function showStep(n){
     if(i+1===n)e.classList.add('act');
     else if(i+1<n)e.classList.add('dn');
   });
-  cur=n;
 }
+function prev(n){showStep(n)}
 
 async function next1(){
+  const p=$('provider').value;
   const key=$('apiKey').value.trim();
-  if(!key){$('stat1').className='stat er';$('stat1').textContent='请输入 API Key';return}
-  $('stat1').className='stat ok';$('stat1').textContent='⏳ 验证中...';
+  const url=$('apiUrl').value.trim();
+  if(p!=='ollama'&&!key&&p!=='custom'){$('stat1').className='stat er';$('stat1').textContent='请输入 API Key';return}
+  if(!url&&p==='custom'){$('stat1').className='stat er';$('stat1').textContent='请填写 API 地址';return}
+  $('stat1').className='stat ok';$('stat1').textContent='⏳ 保存中...';
   try{
-    const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.api_key',value:key})});
-    const d=await r.json();
-    if(d.ok){
-      await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.base_url',value:$('apiUrl').value.trim()||'https://api.deepseek.com/v1'})});
-      $('stat1').className='stat ok';$('stat1').textContent='✅ API Key 已保存';
-      showStep(2);
-    }else{$('stat1').className='stat er';$('stat1').textContent='保存失败: '+JSON.stringify(d)}
+    await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.provider',value:p})});
+    await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.api_key',value:key||'ollama'})});
+    await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'llm.base_url',value:url})});
+    $('stat1').className='stat ok';$('stat1').textContent='✅ 已保存';
+    showStep(2);
   }catch(e){$('stat1').className='stat er';$('stat1').textContent='保存失败: '+e.message}
 }
 async function next2(){
@@ -158,19 +183,16 @@ async function next3(){
     system_prompt:`你是${name}，你的角色是${role}。使用可用工具完成任务。`
   })});
   showStep(4);
-  // 初始化
   $('stat4').className='stat ok';$('stat4').textContent='⏳ 启动系统中...';
   try{
-    const r=await fetch('/api/start',{method:'POST'});
-    const d=await r.json();
-    if(d.ok){
-      $('stat4').textContent='✅ 系统就绪！';
-      $('finishBtn').style.display='block';
-    }else{$('stat4').className='stat er';$('stat4').textContent='启动失败: '+(d.error||'')}
+    const r=await fetch('/api/start',{method:'POST'});const d=await r.json();
+    if(d.ok){$('stat4').textContent='✅ 系统就绪！';$('finishBtn').style.display='block'}
+    else{$('stat4').className='stat er';$('stat4').textContent='启动失败: '+(d.error||'')}
   }catch(e){$('stat4').className='stat er';$('stat4').textContent='启动失败: '+e.message}
 }
-function prev(n){showStep(n)}
 function finish(){window.location.reload()}
+// 初始化默认
+onProviderChange();
 </script>
 </body>
 </html>

@@ -19,14 +19,18 @@ from .real_tools import (
     WebSearch, WebExtract, FileRead, FileWrite, CodeExec,
 )
 
+# ── 版本信息 ──
+VERSION = "0.1.0"
+GITHUB_REPO = "Augustinues/baigong"
+HERE = Path(__file__).parent.parent
+DOCS = HERE / "docs"
+
 logger = logging.getLogger("baigong.server")
 logging.basicConfig(level=logging.INFO)
 
-app = FastAPI(title="百工 Baigong Server", version="0.1.0")
+app = FastAPI(title="百工 Baigong Server", version=VERSION)
 
 # 前端路径
-HERE = Path(__file__).parent.parent
-DOCS = HERE / "docs"
 FRONTEND_PATH = DOCS / "index.html"
 SETUP_PATH = DOCS / "setup.html"
 
@@ -201,6 +205,94 @@ async def api_task(input: TaskInput):
 
 
 # ── SSE 实时推送 ──
+
+@app.get("/api/update/check")
+async def api_check_update():
+    """检查 GitHub 是否有新版本"""
+    import httpx as httpx_module
+    try:
+        async with httpx_module.AsyncClient(timeout=10) as client:
+            resp = await client.get(
+                f"https://api.github.com/repos/{GITHUB_REPO}/releases/latest",
+                headers={"Accept": "application/vnd.github+json"},
+            )
+            if resp.status_code == 200:
+                data = resp.json()
+                latest = data.get("tag_name", "").lstrip("v")
+                return {
+                    "current": VERSION,
+                    "latest": latest,
+                    "has_update": latest != VERSION,
+                    "html_url": data.get("html_url", ""),
+                    "body": (data.get("body") or "")[:300],
+                }
+            return {"current": VERSION, "latest": VERSION, "has_update": False, "error": f"HTTP {resp.status_code}"}
+    except Exception as e:
+        return {"current": VERSION, "latest": VERSION, "has_update": False, "error": str(e)[:100]}
+
+
+@app.post("/api/update/apply")
+async def api_apply_update():
+    """从 GitHub 拉取最新代码并重启"""
+    global _current_task
+    import subprocess, sys
+
+    source_dir = config.get("system.source_dir", str(HERE))
+    if not os.path.isdir(os.path.join(source_dir, ".git")):
+        return {"ok": False, "error": "未找到 git 仓库，无法更新"}
+
+    try:
+        # 停止当前任务
+        if _current_task and not _current_task.done():
+            _current_task.cancel()
+            try:
+                await _current_task
+            except:
+                pass
+
+        # git pull
+        result = subprocess.run(
+            ["git", "pull"],
+            cwd=source_dir,
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode != 0:
+            return {"ok": False, "error": f"git pull 失败: {result.stderr[:200]}"}
+
+        # 重新加载模块
+        import importlib
+        for mod_name in list(sys.modules.keys()):
+            if mod_name.startswith("server.") or mod_name.startswith("agent_sdk"):
+                importlib.reload(sys.modules[mod_name])
+
+        # 清除 docs 文件缓存
+        index_path = DOCS / "index.html"
+        if index_path.exists():
+            index_path.stat()  # 刷新 stat 缓存
+
+        return {"ok": True, "message": f"更新完成\n{result.stdout[:200]}"}
+    except subprocess.TimeoutExpired:
+        return {"ok": False, "error": "git pull 超时"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:200]}
+
+
+@app.get("/api/update/status")
+async def api_update_status():
+    """查看当前版本和 git 状态"""
+    import subprocess
+    source_dir = config.get("system.source_dir", str(HERE))
+    try:
+        r = subprocess.run(["git", "log", "--oneline", "-3"], cwd=source_dir,
+                          capture_output=True, text=True, timeout=5)
+        commits = r.stdout.strip()
+        r2 = subprocess.run(["git", "status", "--short"], cwd=source_dir,
+                           capture_output=True, text=True, timeout=5)
+        modified = r2.stdout.strip()
+        return {"version": VERSION, "commits": commits, "modified": modified}
+    except:
+        return {"version": VERSION, "commits": "?", "modified": ""}
+
 
 @app.get("/api/events")
 async def sse_events(request: Request):

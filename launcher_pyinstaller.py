@@ -12,9 +12,14 @@ logger = logging.getLogger("baigong")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
+# 确保配置了源码目录（用于 git 更新）
+from server.config import config
+source = os.path.expanduser("~/Desktop/涂涂/项目开发/agent-company")
+if os.path.isdir(os.path.join(source, ".git")):
+    config.set("system.source_dir", source)
+
 
 def start_server():
-    """在后台线程启动 uvicorn 服务器"""
     import uvicorn
     host = "127.0.0.1"
     port = 8000

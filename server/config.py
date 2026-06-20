@@ -12,7 +12,7 @@ DEFAULT_CONFIG = {
     "version": "1.0",
     "llm": {
         "provider": "deepseek",
-        "model": "deepseek-chat",
+        "model": "deepseek-v4-flash",
         "api_key": "",
         "base_url": "https://api.deepseek.com/v1",
         "temperature": 0.7,
@@ -31,6 +31,41 @@ DEFAULT_CONFIG = {
             "file_write",
             "code_exec",
         ]
+    },
+}
+
+# 各 Provider 默认配置
+PROVIDER_DEFAULTS = {
+    "deepseek": {
+        "base_url": "https://api.deepseek.com/v1",
+        "models": ["deepseek-v4-flash", "deepseek-v4-plus", "deepseek-reasoner"],
+        "default_model": "deepseek-v4-flash",
+        "note": "申请地址：platform.deepseek.com → API Keys",
+    },
+    "openai": {
+        "base_url": "https://api.openai.com/v1",
+        "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo", "gpt-3.5-turbo"],
+        "default_model": "gpt-4o-mini",
+        "note": "申请地址：platform.openai.com → API Keys",
+    },
+    "dashscope": {
+        "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        "models": ["qwen-max", "qwen-plus", "qwen-turbo", "qwen3-vl-plus"],
+        "default_model": "qwen-max",
+        "note": "申请地址：bailian.console.aliyun.com → API Keys",
+    },
+    "ollama": {
+        "base_url": "http://localhost:11434/v1",
+        "models": ["llama3", "qwen2.5", "mistral", "deepseek-r1:latest"],
+        "default_model": "llama3",
+        "note": "本地 Ollama 服务，确保已启动：ollama serve",
+        "api_key": "ollama",
+    },
+    "openrouter": {
+        "base_url": "https://openrouter.ai/api/v1",
+        "models": ["openai/gpt-4o", "anthropic/claude-sonnet-4", "google/gemini-2.0-flash"],
+        "default_model": "openai/gpt-4o",
+        "note": "申请地址：openrouter.ai → Keys",
     },
 }
 

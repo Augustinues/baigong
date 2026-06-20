@@ -10,7 +10,7 @@ from typing import Optional
 
 from agent_sdk import ToolRegistry, TaskBoard, TaskStatus
 from .config import config
-from .llm_client import DeepSeekClient
+from .llm_client import LLMClient
 
 logger = logging.getLogger("baigong.orchestrator")
 
@@ -19,7 +19,7 @@ class AgentInstance:
     """一个真实的 Agent 实例"""
 
     def __init__(self, agent_id: str, name: str, role: str, model: str,
-                 tools: list[str], system_prompt: str, llm: DeepSeekClient):
+                 tools: list[str], system_prompt: str, llm: LLMClient):
         self.id = agent_id
         self.name = name
         self.role = role
@@ -60,7 +60,7 @@ class RealOrchestrator:
     def __init__(self):
         self.agents: dict[str, AgentInstance] = {}
         self.board = TaskBoard()
-        self.llm_client: Optional[DeepSeekClient] = None
+        self.llm_client: Optional[LLMClient] = None
         self.running = False
 
         # SSE 事件
@@ -77,12 +77,7 @@ class RealOrchestrator:
             logger.warning("未配置 API Key")
             return False
 
-        self.llm_client = DeepSeekClient(
-            api_key=api_key,
-            model=config.get("llm.model", "deepseek-chat"),
-            temperature=config.get("llm.temperature", 0.7),
-            max_tokens=config.get("llm.max_tokens", 4096),
-        )
+        self.llm_client = LLMClient()
         return True
 
     def load_agents_from_config(self):
