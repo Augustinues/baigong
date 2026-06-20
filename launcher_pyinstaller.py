@@ -1,6 +1,5 @@
-"""
-百工 Baigong — macOS 原生应用入口 (PyInstaller 版)
-使用 pywebview 创建原生 macOS 窗口（WKWebView）
+"""百工 Baigong — macOS 原生应用入口 (PySide6 版)
+纯 Python 桌面 GUI，不再依赖 pywebview / HTML / JS
 """
 
 import os
@@ -9,7 +8,6 @@ import time
 import threading
 import logging
 
-# 日志写到文件，方便排查（--windowed 模式下控制台不可用）
 LOG_FILE = os.path.expanduser("~/Library/Logs/baigong.log")
 logging.basicConfig(
     level=logging.DEBUG,
@@ -20,13 +18,13 @@ logging.basicConfig(
     ],
 )
 logger = logging.getLogger("baigong")
-logger.info(f"=== 百工 Baigong v0.2.3 启动 ===")
+logger.info(f"=== 百工 Baigong v0.8.0 启动 (纯 Python PySide6) ===")
 logger.info(f"PID: {os.getpid()}")
 logger.info(f"HERE: {os.path.dirname(os.path.abspath(__file__))}")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
-# 确保配置了源码目录（用于 git 更新）
+# 确保配置了源码目录
 from server.config import config
 source = os.path.expanduser("~/Desktop/涂涂/项目开发/agent-company")
 if os.path.isdir(os.path.join(source, ".git")):
@@ -34,7 +32,6 @@ if os.path.isdir(os.path.join(source, ".git")):
 
 
 def wait_for_server(url: str, timeout: int = 30) -> bool:
-    """等待服务就绪"""
     import urllib.request
     start = time.time()
     while time.time() - start < timeout:
@@ -63,11 +60,11 @@ def start_server():
 
 
 def main():
-    # 启动服务
+    # 启动 FastAPI 服务端
     t = threading.Thread(target=start_server, daemon=True)
     t.start()
 
-    # 等待服务就绪（最多 30 秒）
+    # 等待服务就绪
     url = "http://127.0.0.1:8000"
     ready = wait_for_server(url, timeout=30)
     if not ready:
@@ -75,36 +72,31 @@ def main():
     else:
         logger.info("服务就绪")
 
-    # 创建原生 macOS 窗口（WKWebView）
-    logger.info("正在创建 pywebview 窗口...")
+    # 启动 PySide6 主窗口（纯 Python GUI）
+    logger.info("正在创建 PySide6 主窗口...")
     try:
-        import webview
-        logger.info(f"pywebview 版本: {getattr(webview, '__version__', '?')}")
+        from PySide6.QtWidgets import QApplication
+        from frontend.main_window import BaigongMainWindow
 
-        window = webview.create_window(
-            title="百工 Baigong",
-            url=url,
-            width=1280,
-            height=800,
-            min_size=(800, 600),
-            resizable=True,
-            fullscreen=False,
-            text_select=True,
-            confirm_close=True,
-        )
-        logger.info("窗口创建成功，启动事件循环...")
-        webview.start(
-            debug=True,
-            http_server=False,
-            storage_path=os.path.join(HERE, ".webview_cache"),
-        )
+        # 确保 QApplication 是唯一的
+        app = QApplication.instance()
+        if app is None:
+            app = QApplication(sys.argv)
+
+        app.setApplicationName("百工 Baigong")
+        app.setOrganizationName("Baigong")
+
+        window = BaigongMainWindow()
+        window.show()
+
+        logger.info("PySide6 窗口创建成功，进入事件循环...")
+        sys.exit(app.exec())
     except Exception as e:
-        logger.exception(f"pywebview 启动失败: {e}")
+        logger.exception(f"PySide6 启动失败: {e}")
         # 兜底：打开浏览器
         import subprocess
         logger.info("降级：用浏览器打开")
         subprocess.run(["open", url], check=False)
-        # 保持进程存活
         try:
             while True:
                 time.sleep(1)
