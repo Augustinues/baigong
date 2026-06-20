@@ -1,72 +1,38 @@
-# 更新日志
+# 百工 Baigong — 更新日志
 
-所有版本变更记录在此。
+## v0.2.3 (2026-06-20)
 
----
+### Bugfix
+- 替换 pywebview（WKWebView）为默认浏览器打开，彻底解决启动后一直"加载中"的卡死问题
+- 移除 webview 依赖，减小打包体积
+### Optimize
+- 不再需要内嵌 WebView，启动更稳定
 
-## v0.2.2
+## v0.2.2 (2026-06-20)
 
-发布日期：2026-06-20
+### Bugfix
+- 修复启动后一直卡死（exit code 137）的问题：去掉了 `psutil`/`httpx` 外部依赖
+- 修复启动台看不到 app：`CFBundleIdentifier` 改为 `com.baigong.agent`
+### New
+- 支持 7 种 LLM Provider：DeepSeek / OpenAI / Anthropic / DashScope / Ollama / OpenRouter / 自定义
 
-### 🐛 修复
-- 修复启动卡死（端口冲突导致服务起不来）
-- 修复模型名错误导致API无法连接
-- 修复热更新无法检测版本
+## v0.2.1 (2026-06-20)
 
-### ✨ 新增
-- 启动时自动杀掉旧版本进程
-- 等待服务就绪后再打开窗口
-- 新增 Anthropic 支持
-- 热更新新增代理支持
-- 打包版支持从 GitHub 下载更新
+### Bugfix
+- 修复打包版更新检测失效的问题
 
-### 🔧 优化
-- 配置向导支持 7 种 API 提供商
-- 更新说明随版本同步
+## v0.2.0 (2026-06-20)
 
----
+### New
+- 真实 Agent 管理工具：创建、配置、运行 Agent
+- 配置向导：首次启动选择 API Key / 模型 / 创建首个 Agent
+- 5 个管理面板：Agent / 任务 / 工具 / 日志 / 配置
+- 热更新：打包版从 GitHub Release 下载 DMG，源码版 git pull
+- 支持 7 种 LLM Provider
 
-## v0.2.1
+## v0.1.0 (2026-06-20)
 
-发布日期：2026-06-20
-
-### 🐛 修复
-- 修复模型名错误导致API无法连接
-- 修复热更新在打包版中无法检测版本
-
-### ✨ 新增
-- 新增 Anthropic 支持
-- 热更新新增代理支持（ALL_PROXY）
-- 打包版点击更新从 GitHub 下载最新 DMG
-
-### 🔧 优化
-- 配置向导支持 7 种 API 提供商
-- 更新说明随版本同步
-
----
-
-## v0.2.0
-
-发布日期：2026-06-20
-
-### ✨ 新增
-- 配置向导支持 7 种 API 提供商（DeepSeek / OpenAI / Anthropic / DashScope / Ollama / OpenRouter / 自定义）
-- 新增热更新机制（配置 → 版本与更新 → 一键更新）
-
-### 🔧 优化
-- 版本号跟随每次发布更新
-- 所有模型名来自各厂商官方文档
-
----
-
-## v0.1.0
-
-发布日期：2026-06-20
-
-### ✨ 新增
-- 首个公开发布版本
-- 原生 macOS App（PyInstaller 打包）
-- Agent 创建、任务分配、日志监控
-- 在线系统监控面板（GitHub Pages）
-- Agent 模拟演示
-- 支持 DeepSeek / OpenAI 等 API
+### New
+- 首个版本（模拟演示）
+- macOS 原生 .app
+- 游戏风格 Agent 模拟面板
