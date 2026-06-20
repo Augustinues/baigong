@@ -54,5 +54,10 @@ app = BUNDLE(
     coll,
     name='百工 Baigong.app',
     icon='baigong.icns',
-    bundle_identifier=None,
+    bundle_identifier='com.baigong.agent',
+    info_plist={
+        'CFBundleShortVersionString': '0.2.2',
+        'CFBundleVersion': '0.2.2',
+        'CFBundleDisplayName': '百工 Baigong',
+    },
 )
