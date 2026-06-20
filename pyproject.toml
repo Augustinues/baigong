@@ -4,7 +4,7 @@ build-backend = "setuptools.backends._legacy:_Backend"
 
 [project]
 name = "agent-company"
-version = "0.2.1"
+version = "0.2.2"
 description = "百工 (Baigong) — 让 AI Agent 像工匠一样协作的开源框架"
 readme = "README.md"
 license = {text = "MIT"}

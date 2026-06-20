@@ -43,8 +43,8 @@ OPTIONS = {
         'CFBundleName': APP_NAME,
         'CFBundleDisplayName': APP_NAME,
         'CFBundleIdentifier': 'com.baigong.agent',
-        'CFBundleVersion': '0.2.1',
-        'CFBundleShortVersionString': '0.2.1',
+        'CFBundleVersion': '0.2.2',
+        'CFBundleShortVersionString': '0.2.2',
         'CFBundleExecutable': APP_NAME,
         'CFBundlePackageType': 'APPL',
         'NSHighResolutionCapable': True,
@@ -58,7 +58,7 @@ OPTIONS = {
 
 setup(
     name=APP_NAME,
-    version='0.2.1',
+    version='0.2.2',
     description='百工 Baigong — 多 Agent 协作系统',
     long_description='自我进化的多Agent协作系统。每个Agent是独立个体，通过消息和看板异步协作。',
     author='百工 Team',
