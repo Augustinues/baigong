@@ -1,7 +1,7 @@
 # 百工 Baigong 🏮
 
 **让 AI Agent 像工匠一样协作的开源框架。**  
-[![在线 Demo](https://img.shields.io/badge/%F0%9F%8E%AE%E5%9C%A8%E7%BA%BF%20Demo-augustinues.github.io-%23f59e0b)](https://augustinues.github.io/baigong/)
+[![在线监控面板](https://img.shields.io/badge/%F0%9F%92%BB%E5%9C%A8%E7%BA%BF%E7%9B%91%E6%8E%A7-augustinues.github.io-%23f59e0b)](https://augustinues.github.io/baigong/)
 
 百工出《周礼》——"百工饬力，各司其职"。每一个 Agent 就像一位工匠：有自己的角色、工具和记忆，通过看板和消息专注协作，在一次次任务中自然成长。
 
@@ -27,13 +27,20 @@
 
 ---
 
-## 网页 Demo —— 像游戏一样看 Agent 协作
+## 在线系统监控面板
 
-百工自带一个游戏风格的 Web 管理界面——深色主题，实时动画，跟玩经营游戏一样。
+百工自带一个浏览器版运行时监控面板，展示 Agent 集群的实际运行过程：
 
-**👉 在线体验：https://augustinues.github.io/baigong/**
+**👉 https://augustinues.github.io/baigong/**
 
-本地运行：
+点击「启动系统」后，可以看到：
+- **Agent 注册表** — 5 个独立 Agent 各自的思考-行动循环状态
+- **消息总线** — Agent 之间的通信记录（TASK_ASSIGN / STATUS_UPDATE / TASK_RESULT）
+- **任务看板** — 主管动态拆解任务 → 研究员搜索 → 编辑整理 → 管理员入库 → 质检复核
+- **记忆巩固** — Agent 完成任务后自动判断显著性并写入长期记忆树
+- **Skill 自动形成** — 检测到重复模式后自动挖掘可复用 Skill
+
+面板右侧的「架构详情」按钮可查看百工五大核心组件与自我进化机制的完整说明。
 
 浏览器打开 **http://localhost:8000**，点击 **「开始演示」**，看 Agent 们自动协作完成"翡翠知识库入库"任务。
 
