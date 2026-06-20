@@ -902,6 +902,10 @@ class WorkflowBar(QWidget):
 class BaigongMainWindow(QMainWindow):
     """百工 Baigong 主窗口"""
 
+    # 信号：用于 SSE 线程安全地传递数据到主线程
+    state_updated = Signal(dict)
+    start_result = Signal(object)  # start 结果，主线程处理 UI
+
     def __init__(self):
         super().__init__()
         self._state = {}
@@ -915,6 +919,9 @@ class BaigongMainWindow(QMainWindow):
 
         self._setup_ui()
         self._apply_theme("indigo")
+        # SSE 信号 → 主线程渲染
+        self.state_updated.connect(self._render)
+        self.start_result.connect(self._on_start_result)
         self._start_polling()
 
     def _setup_ui(self):
@@ -1079,15 +1086,24 @@ class BaigongMainWindow(QMainWindow):
     def _on_start(self):
         self._btn_start.setEnabled(False)
         self.set_status("⏳ 启动中...")
-        res = api_post("/api/start")
-        if res.get("ok"):
+        # 后台线程启动，不阻塞 UI
+        import threading as _t
+        def _do_start():
+            res = api_post("/api/start")
+            self.start_result.emit(res)  # 信号 → 主线程处理 UI
+        _t.Thread(target=_do_start, daemon=True).start()
+
+    def _on_start_result(self, res):
+        """主线程：处理启动结果"""
+        if isinstance(res, dict) and res.get("ok"):
             self._btn_start.setVisible(False)
             self._btn_stop.setVisible(True)
             self.set_status("✅ 运行中")
             self._start_sse()
             self.refresh_state()
         else:
-            self.set_status("❌ " + (res.get("error") or "启动失败"))
+            err = (res or {}).get("error") or "启动失败"
+            self.set_status("❌ " + err)
             self._btn_start.setEnabled(True)
 
     def _on_stop(self):
@@ -1156,7 +1172,7 @@ class BaigongMainWindow(QMainWindow):
 
     def _on_sse_data(self, data: dict):
         if data:
-            self._render(data)
+            self.state_updated.emit(data)  # 信号 → 主线程安全渲染
 
     # ── 轮询 ──
 
