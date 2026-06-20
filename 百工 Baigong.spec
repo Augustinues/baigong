@@ -1,19 +1,12 @@
 # -*- mode: python ; coding: utf-8 -*-
-from PyInstaller.utils.hooks import collect_all
-
-datas = [('docs', 'docs')]
-binaries = []
-hiddenimports = ['server.main', 'agent_sdk', 'uvicorn.logging', 'uvicorn.loops.auto', 'uvicorn.loops.asyncio', 'uvicorn.protocols.http.auto', 'uvicorn.protocols.http.h11_impl', 'uvicorn.protocols.websockets.auto', 'uvicorn.protocols.websockets.wsproto_impl']
-tmp_ret = collect_all('webview')
-datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
 
 a = Analysis(
     ['launcher_pyinstaller.py'],
     pathex=[],
-    binaries=binaries,
-    datas=datas,
-    hiddenimports=hiddenimports,
+    binaries=[],
+    datas=[('docs', 'docs')],
+    hiddenimports=['server.main', 'agent_sdk', 'uvicorn.logging', 'uvicorn.loops.auto', 'uvicorn.loops.asyncio', 'uvicorn.protocols.http.auto', 'uvicorn.protocols.http.h11_impl', 'uvicorn.protocols.websockets.auto', 'uvicorn.protocols.websockets.wsproto_impl'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -54,10 +47,5 @@ app = BUNDLE(
     coll,
     name='百工 Baigong.app',
     icon='baigong.icns',
-    bundle_identifier='com.baigong.agent',
-    info_plist={
-        'CFBundleShortVersionString': '0.2.2',
-        'CFBundleVersion': '0.2.2',
-        'CFBundleDisplayName': '百工 Baigong',
-    },
+    bundle_identifier=None,
 )

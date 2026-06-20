@@ -46,7 +46,6 @@ def build():
         "--hidden-import", "uvicorn.protocols.http.h11_impl",
         "--hidden-import", "uvicorn.protocols.websockets.auto",
         "--hidden-import", "uvicorn.protocols.websockets.wsproto_impl",
-        "--collect-all", "webview",
         "launcher_pyinstaller.py",
     ], check=True, cwd=HERE)
 

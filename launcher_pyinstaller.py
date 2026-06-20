@@ -1,5 +1,6 @@
 """
 百工 Baigong — macOS 原生应用入口 (PyInstaller 版)
+改用默认浏览器打开，替代 pywebview（WKWebView 不稳定）
 """
 
 import os
@@ -7,6 +8,7 @@ import sys
 import time
 import threading
 import logging
+import subprocess
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("baigong")
@@ -50,32 +52,31 @@ def start_server():
 
 
 def main():
-    # 无需 psutil，直接启动服务
+    # 启动服务
     t = threading.Thread(target=start_server, daemon=True)
     t.start()
 
     # 等待服务就绪（最多 20 秒）
     ready = wait_for_server("http://127.0.0.1:8000/", timeout=20)
     if not ready:
-        logger.warning("服务启动超时（可能端口被占用），仍尝试打开界面")
+        logger.warning("服务启动超时（可能端口被占用），仍尝试打开浏览器")
+    else:
+        logger.info("服务就绪")
 
-    import webview
-    window = webview.create_window(
-        title="百工 Baigong",
-        url="http://127.0.0.1:8000",
-        width=1280,
-        height=800,
-        min_size=(800, 600),
-        resizable=True,
-        fullscreen=False,
-        text_select=True,
-        confirm_close=True,
-    )
-    webview.start(
-        debug=False,
-        http_server=False,
-        storage_path=os.path.join(HERE, ".webview_cache"),
-    )
+    # 用默认浏览器打开
+    url = "http://127.0.0.1:8000"
+    logger.info(f"在默认浏览器中打开 {url}")
+    subprocess.run(["open", url], check=False)
+
+    # 保持进程存活（浏览器关闭后保留服务）
+    print(f"\n百工 Baigong 服务已启动: {url}")
+    print("按 Ctrl+C 停止服务")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("服务停止")
+        sys.exit(0)
 
 
 if __name__ == "__main__":
