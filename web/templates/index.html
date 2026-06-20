@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>百工 — Baigong Demo</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body>
+    <!-- ═══ 顶部栏 ═══ -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <h1 class="logo">🏮 百工 <span class="logo-sub">Baigong</span></h1>
+            <span class="tagline">让 AI Agent 像工匠一样协作</span>
+        </div>
+        <div class="topbar-center">
+            <div class="speed-control">
+                <span class="speed-label">速度</span>
+                <button class="btn-speed" data-speed="0.5">½×</button>
+                <button class="btn-speed active" data-speed="1.0">1×</button>
+                <button class="btn-speed" data-speed="2.0">2×</button>
+                <button class="btn-speed" data-speed="5.0">5×</button>
+                <button class="btn-speed" data-speed="10.0">10×</button>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <button id="btn-start" class="btn btn-primary" hx-post="/start" hx-target="#status-bar" hx-swap="innerHTML" hx-on::after-request="onStart()">▶ 开始演示</button>
+            <button id="btn-stop" class="btn btn-danger" style="display:none" hx-post="/stop" hx-target="#status-bar" hx-swap="innerHTML" hx-on::after-request="onStop()">⏹ 停止</button>
+        </div>
+    </header>
+
+    <!-- ═══ 状态栏 ═══ -->
+    <div id="status-bar" class="status-bar">
+        <span>点击「开始演示」启动百工协作流程 →</span>
+    </div>
+
+    <!-- ═══ 主面板 ═══ -->
+    <main class="dashboard">
+        <!-- 左栏：Agent 工位 -->
+        <section class="panel panel-agents" id="panel-agents">
+            <div class="panel-header">
+                <h2>👥 工匠工位</h2>
+                <span class="badge" id="agent-count">5</span>
+            </div>
+            <div class="agent-grid" id="agent-grid">
+                <div class="agent-card placeholder">
+                    <div class="agent-avatar">⏳</div>
+                    <div class="agent-info">
+                        <div class="agent-name">等待启动...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 中栏：看板 -->
+        <section class="panel panel-board" id="panel-board">
+            <div class="panel-header">
+                <h2>📋 任务看板</h2>
+                <span class="badge" id="task-count">0</span>
+            </div>
+            <div class="board-columns">
+                <div class="board-col col-pending">
+                    <div class="col-header">待处理</div>
+                    <div class="col-cards" id="col-pending"></div>
+                </div>
+                <div class="board-col col-progress">
+                    <div class="col-header">进行中</div>
+                    <div class="col-cards" id="col-progress"></div>
+                </div>
+                <div class="board-col col-done">
+                    <div class="col-header">已完成</div>
+                    <div class="col-cards" id="col-done"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右栏：日志 + 记忆树 -->
+        <section class="panel panel-side">
+            <!-- 日志 -->
+            <div class="panel panel-log" id="panel-log">
+                <div class="panel-header">
+                    <h2>📜 协作日志</h2>
+                </div>
+                <div class="log-list" id="log-list"></div>
+            </div>
+            <!-- 记忆 -->
+            <div class="panel panel-memory" id="panel-memory">
+                <div class="panel-header">
+                    <h2>🧠 记忆树</h2>
+                </div>
+                <div class="memory-list" id="memory-list">
+                    <div class="memory-empty">等待 Agent 积累经验...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ═══ SSE 实时更新 ═══ -->
+    <script>
+        let eventSource = null;
+
+        function onStart() {
+            document.getElementById('btn-start').style.display = 'none';
+            document.getElementById('btn-stop').style.display = 'inline-block';
+            connectSSE();
+        }
+
+        function onStop() {
+            document.getElementById('btn-start').style.display = 'inline-block';
+            document.getElementById('btn-stop').style.display = 'none';
+            if (eventSource) { eventSource.close(); eventSource = null; }
+            document.getElementById('status-bar').innerHTML = '<span>⏹ 演示已停止</span>';
+        }
+
+        function connectSSE() {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource('/events');
+
+            eventSource.onmessage = function(e) {
+                const state = JSON.parse(e.data);
+                render(state);
+            };
+
+            eventSource.onerror = function() {
+                // 自动重连
+            };
+        }
+
+        // ── 速度控制 ──
+        document.querySelectorAll('.btn-speed').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const speed = this.dataset.speed;
+                document.querySelectorAll('.btn-speed').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                fetch('/speed/' + speed, { method: 'POST' });
+            });
+        });
+
+        // ── 渲染函数 ──
+        function render(state) {
+            renderAgents(state);
+            renderBoard(state);
+            renderLog(state);
+            renderMemory(state);
+            renderStatus(state);
+        }
+
+        function renderAgents(state) {
+            const grid = document.getElementById('agent-grid');
+            if (!state.agents || state.agents.length === 0) {
+                grid.innerHTML = '<div class="agent-card placeholder"><div class="agent-avatar">⏳</div><div class="agent-info"><div class="agent-name">等待启动...</div></div></div>';
+                return;
+            }
+
+            grid.innerHTML = state.agents.map(a => `
+                <div class="agent-card status-${a.status}">
+                    <div class="agent-avatar" style="background:${a.color}22; border-color:${a.color}">
+                        ${a.icon}
+                        <span class="status-dot status-${a.status}"></span>
+                    </div>
+                    <div class="agent-info">
+                        <div class="agent-name">${a.name}</div>
+                        <div class="agent-role">${a.role}</div>
+                        <div class="agent-action">${a.action || '待命中'}</div>
+                        <div class="agent-stats">
+                            <span title="工具调用">🔧 ${a.tool_calls}</span>
+                            <span title="完成任务">✅ ${a.tasks_done}</span>
+                            <span title="记忆节点">🧠 ${a.memory_nodes}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            document.getElementById('agent-count').textContent = state.agents.length;
+        }
+
+        function renderBoard(state) {
+            const pending = document.getElementById('col-pending');
+            const progress = document.getElementById('col-progress');
+            const done = document.getElementById('col-done');
+
+            if (!state.tasks || state.tasks.length === 0) {
+                pending.innerHTML = '<div class="card-empty">暂无任务</div>';
+                progress.innerHTML = '<div class="card-empty">暂无任务</div>';
+                done.innerHTML = '<div class="card-empty">暂无任务</div>';
+                document.getElementById('task-count').textContent = '0';
+                return;
+            }
+
+            const p = [], ip = [], d = [];
+            state.tasks.forEach(t => {
+                const card = `
+                    <div class="task-card status-${t.status}">
+                        <div class="task-goal">${t.goal}</div>
+                        ${t.assignee ? `<div class="task-assignee">👤 ${t.assignee}</div>` : ''}
+                        ${t.result ? `<div class="task-result">${t.result}</div>` : ''}
+                        ${t.progress > 0 ? `<div class="task-progress"><div class="progress-bar" style="width:${t.progress*100}%"></div></div>` : ''}
+                    </div>
+                `;
+                if (t.status === 'pending') p.push(card);
+                else if (t.status === 'in_progress' || t.status === 'working') ip.push(card);
+                else if (t.status === 'done' || t.status === 'completed' || t.status === 'failed') d.push(card);
+                else p.push(card);
+            });
+
+            pending.innerHTML = p.join('') || '<div class="card-empty">暂无任务</div>';
+            progress.innerHTML = ip.join('') || '<div class="card-empty">暂无任务</div>';
+            done.innerHTML = d.join('') || '<div class="card-empty">暂无任务</div>';
+            document.getElementById('task-count').textContent = state.tasks.length;
+        }
+
+        function renderLog(state) {
+            const list = document.getElementById('log-list');
+            if (!state.logs || state.logs.length === 0) {
+                list.innerHTML = '<div class="log-empty">等待事件...</div>';
+                return;
+            }
+            list.innerHTML = state.logs.map(l => `
+                <div class="log-entry log-${l.type}">
+                    <span class="log-time">${l.time}</span>
+                    <span class="log-agent">${l.icon} ${l.agent}</span>
+                    <span class="log-text">${l.text}</span>
+                </div>
+            `).join('');
+            list.scrollTop = list.scrollHeight;
+        }
+
+        function renderMemory(state) {
+            const list = document.getElementById('memory-list');
+            if (!state.memories || state.memories.length === 0) {
+                list.innerHTML = '<div class="memory-empty">等待 Agent 积累经验...</div>';
+                return;
+            }
+            list.innerHTML = state.memories.map(m => `
+                <div class="mem-node">
+                    <div class="mem-header">
+                        <span class="mem-agent">${m.icon} ${m.agent}</span>
+                        <span class="mem-conf">${m.confidence}%</span>
+                    </div>
+                    <div class="mem-concept">${m.concept}</div>
+                    <div class="mem-summary">${m.summary}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderStatus(state) {
+            const bar = document.getElementById('status-bar');
+            if (state.finished) {
+                bar.innerHTML = '<span>🎉 百工协作完成！所有任务已交付</span>';
+                document.getElementById('btn-start').style.display = 'inline-block';
+                document.getElementById('btn-stop').style.display = 'none';
+                if (eventSource) { eventSource.close(); eventSource = null; }
+            } else if (state.running) {
+                const total = state.tasks ? state.tasks.length : 0;
+                const done = state.tasks ? state.tasks.filter(t => t.status === 'done' || t.status === 'completed').length : 0;
+                bar.innerHTML = `<span>⚙️ 运行中 · 第 ${state.step} 步 · 任务 ${done}/${total}</span>`;
+            }
+        }
+    </script>
+</body>
+</html>
