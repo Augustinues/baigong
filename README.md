@@ -31,7 +31,24 @@
 
 百工以 **原生 macOS 窗口** 运行，不跳浏览器、不依赖终端。
 
-下载后双击 .dmg → 把 `百工 Baigong.app` 拖到 Applications 文件夹 → 双击打开 → 直接在窗口中管理 Agent 集群。
+下载后双击 .dmg → 把 `百工 Baigong.app` 拖到 Applications 文件夹 → 双击打开。
+
+**第一次打开** — 走 4 步配置向导：
+1. 选择 LLM 提供商（DeepSeek / OpenAI / 阿里云 / Ollama / OpenRouter 等）
+2. 输入 API Key，选择模型
+3. 创建第一个 Agent
+4. 自动启动系统
+
+**之后直接进入管理面板**
+- 🤖 **Agent 管理** — 查看/创建/编辑/删除 Agent，看状态和工具
+- 📋 **任务看板** — 下发真实任务，Agent 用 DeepSeek 思考+调用工具执行
+- 🔧 **工具浏览** — web_search、web_extract、file_read、file_write、code_exec
+- 📜 **实时日志** — Agent 每步思考-行动可见
+- ⚙️ **配置** — 修改 API Key/模型/参数 + **在线检查更新**
+
+**在线更新** — 以后不需要重新下载 .dmg，在
+`配置 → 版本与更新 → 检查更新 → 更新`
+点击即可从 GitHub 拉取最新代码，自动重启生效。
 
 **下载地址：** ↓
 
