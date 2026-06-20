@@ -302,7 +302,7 @@ function renderAgents(s){
     const sel=selectedAgent&&selectedAgent.id===x.id?'sel':'';
     return `<div class="ag-card ${sel}" onclick="selectAgent('${x.id}')">
       <div class="ag-av-wrap"><div class="ag-av">🤖</div><span class="dot dot-${x.status||'idle'}"></span></div>
-      <div class="ag-info"><div class="ag-name">${esc(x.name)}</div><div class="ag-role2">${esc(x.role||'')}</div><div class="ag-action">${x.action||'等待任务...'}</div></div>
+      <div class="ag-info"><div class="ag-name">${esc(x.name)}${x.is_temporary?' <span style="font-size:8px;color:var(--accent);font-weight:400">📎</span>':''}</div><div class="ag-role2">${esc(x.role||'')}${x.is_temporary&&x.creator?` · 由 ${esc(x.creator)} 创建`:''}</div><div class="ag-action">${x.action||'等待任务...'}</div></div>
     </div>`;
   }).join(''):'<div style="text-align:center;padding:20px;color:var(--dim);font-size:11px">暂无 Agent<br><span style="font-size:9px">点击下方 + 新建</span></div>';
   // Task agent dropdown

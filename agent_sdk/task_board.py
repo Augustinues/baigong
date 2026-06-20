@@ -160,6 +160,16 @@ class TaskBoard:
         conn.close()
         return [self._row_to_task(r) for r in rows]
 
+    def get_completed_tasks(self, limit: int = 20) -> list[Task]:
+        """获取已完成的任务"""
+        conn = get_db()
+        rows = conn.execute(
+            "SELECT * FROM tasks WHERE status=? ORDER BY completed_at DESC LIMIT ?",
+            (TaskStatus.COMPLETED.value, limit)
+        ).fetchall()
+        conn.close()
+        return [self._row_to_task(r) for r in rows]
+
     def _save_flow_log(self, task: Task):
         conn = get_db()
         conn.execute(
